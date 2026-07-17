@@ -5,16 +5,19 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3002;
+const projectRoot = __dirname;
+const publicPath = path.join(projectRoot, 'public');
+const dbPath = path.join(projectRoot, 'mobilehub.db');
 
 // Middleware - Increased limit for image uploads
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
-app.use(express.static('public'));
+app.use(express.static(publicPath));
 
 // Database connection
-const db = new sqlite3.Database('./mobilehub.db', (err) => {
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error connecting to database:', err.message);
     } else {
