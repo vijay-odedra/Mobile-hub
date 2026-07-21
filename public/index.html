@@ -455,8 +455,55 @@
 
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' })[m]); }
     function lowStockAlertList() { return products.filter(p => p.stock < p.min_stock); }
-    function getTotalRevenue() { return products.reduce((s, p) => s + (p.soldCount * p.price), 0); }
+
+    function getTotalRevenue() {
+      const billRevenue = bills.reduce((sum, bill) => {
+        const grandTotal = Number(bill.grand_total ?? bill.grandTotal ?? 0);
+        return sum + (Number.isFinite(grandTotal) ? grandTotal : 0);
+      }, 0);
+      return Number.isFinite(billRevenue) ? billRevenue : 0;
+    }
+
+    function getRevenueChangePercent() {
+      const currentDate = new Date();
+      const currentMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const previousMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+      const currentMonthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+
+      const currentRevenue = bills.reduce((sum, bill) => {
+        const billDate = new Date(bill.date || bill.created_at || bill.createdAt || bill.timestamp || 0);
+        if (Number.isNaN(billDate.getTime())) return sum;
+        if (billDate >= currentMonthStart && billDate < currentMonthEnd) {
+          const grandTotal = Number(bill.grand_total ?? bill.grandTotal ?? 0);
+          return sum + (Number.isFinite(grandTotal) ? grandTotal : 0);
+        }
+        return sum;
+      }, 0);
+
+      const previousRevenue = bills.reduce((sum, bill) => {
+        const billDate = new Date(bill.date || bill.created_at || bill.createdAt || bill.timestamp || 0);
+        if (Number.isNaN(billDate.getTime())) return sum;
+        if (billDate >= previousMonthStart && billDate < currentMonthStart) {
+          const grandTotal = Number(bill.grand_total ?? bill.grandTotal ?? 0);
+          return sum + (Number.isFinite(grandTotal) ? grandTotal : 0);
+        }
+        return sum;
+      }, 0);
+
+      if (previousRevenue === 0) return currentRevenue > 0 ? 100 : 0;
+      return ((currentRevenue - previousRevenue) / previousRevenue) * 100;
+    }
+
     function getTotalInventoryValue() { return products.reduce((s, p) => s + (p.stock * p.price), 0); }
+
+    function formatCompactCurrency(value) {
+      const num = Number(value) || 0;
+      if (num >= 10000000) return `₹${(num / 10000000).toFixed(2)} Cr`;
+      if (num >= 100000) return `₹${(num / 100000).toFixed(2)} L`;
+      if (num >= 1000) return `₹${(num / 1000).toFixed(2)} K`;
+      return `₹${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+    }
+
     function generateBillNumber() {
       let counter = parseInt(localStorage.getItem("invoiceCounter") || "1001", 10);
       const invoiceNo = `INV-${counter.toString().padStart(5, '0')}`;
@@ -507,12 +554,14 @@
       const lowItems = lowStockAlertList();
       const totalVal = getTotalInventoryValue();
       const revenue = getTotalRevenue();
+      const revenueChange = getRevenueChangePercent();
+      const revenueChangeText = revenueChange === 0 ? 'No change vs last month' : `${revenueChange >= 0 ? '+' : ''}${revenueChange.toFixed(1)}% from last month`;
       const presentCount = getPresentCount();
       const absentCount = getAbsentCount();
       document.getElementById("mainContentArea").innerHTML = `
         <div><h1>Dashboard</h1><p style="color:#475569;">Real-time retail analytics</p></div>
         <div class="stats-grid">
-          <div class="stat-card green"><i class="fas fa-rupee-sign stat-icon"></i><div class="stat-label">Total Revenue</div><div class="stat-value">₹${revenue.toLocaleString()}</div><div class="stat-sub">+12% from last month</div></div>
+          <div class="stat-card green"><i class="fas fa-rupee-sign stat-icon"></i><div class="stat-label">Total Revenue</div><div class="stat-value">${formatCompactCurrency(revenue)}</div><div class="stat-sub">${revenueChangeText}</div></div>
           <div class="stat-card blue"><i class="fas fa-boxes stat-icon"></i><div class="stat-label">Total Products</div><div class="stat-value">${products.length}</div><div class="stat-sub">Value: ₹${totalVal.toLocaleString()}</div></div>
           <div class="stat-card orange"><i class="fas fa-exclamation-triangle stat-icon"></i><div class="stat-label">Low Stock Alerts</div><div class="stat-value">${lowItems.length}</div><div class="stat-sub">${lowItems.length === 0 ? '✅ All items in stock' : '⚠️ Needs attention'}</div></div>
           <div class="stat-card purple"><i class="fas fa-users stat-icon"></i><div class="stat-label">Total Staff</div><div class="stat-value">${staffList.length}</div><div class="stat-sub">Active: ${staffList.filter(s => s.status === 'active').length}</div></div>
