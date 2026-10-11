@@ -1,223 +1,119 @@
-# Mobile-hub
+# Stockly - Complete Retail & Inventory Management Suite (React + Node.js + Firebase)
 
-MobileHub is a Node.js + Express + SQLite retail management dashboard for products, billing, repairs, staff, and attendance operations.
+Complete Retail & Inventory Management dashboard built with **React 18**, **Node.js Express**, **SQLite**, and **Firebase Firestore**.
 
-## Project Overview
+---
 
-This project uses:
+## ⚡ Quick Start (Run All in One Command)
 
-- Node.js
-- Express.js
-- SQLite database
-- Static frontend served from the `public/` folder
-
-The server automatically creates the SQLite database file named `mobilehub.db` in the project root and initializes the required tables when it starts.
-
-## Prerequisites
-
-Before running this project, make sure you have the following installed on your system:
-
-- Node.js 18+ recommended
-- npm
-- SQLite CLI (optional, useful for inspecting the database)
-
-### Verify installations
+To install, build, and run the complete application in a single command:
 
 ```bash
-node -v
-npm -v
-sqlite3 --version
+npm install && npm run build && npm start
 ```
 
-## Installation
-
-1. Open a terminal in the project folder:
+Or if dependencies are already installed:
 
 ```bash
-cd /opt/lampp/htdocs/Mobile-hub
+npm run app
 ```
 
-2. Install dependencies:
-
-```bash
-npm install
-```
-
-If you are using a fresh environment and `npm install` shows missing packages, run:
-
-```bash
-npm cache clean --force
-npm install
-```
-
-## Run the Project
-
-### Start the server
-
-```bash
-npm start
-```
-
-### Start in development mode
-
-```bash
-npm run dev
-```
-
-### Start the server manually
-
-```bash
-node server.js
-```
-
-Once the server is running, open:
-
+Once running, open your browser and navigate to:
 ```text
 http://localhost:3002
 ```
 
-## Database Setup and Behavior
+---
 
-This app uses SQLite, not MySQL or PostgreSQL.
+## 📋 Step-by-Step Commands to Run Perfectly
 
-### Automatic database creation
-
-When the server starts, it automatically:
-
-- creates the SQLite file `mobilehub.db` if it does not already exist
-- creates the required tables
-- inserts sample product, staff, and repair data if the database is empty
-
-### Database file location
-
-The database is stored in the project root:
-
-```text
-/opt/lampp/htdocs/Mobile-hub/mobilehub.db
-```
-
-### Tables created automatically
-
-The app creates these tables:
-
-- `products`
-- `bills`
-- `bill_items`
-- `repairs`
-- `staff`
-- `attendance_records`
-- `deleted_bills`
-- `deleted_bill_items`
-
-## Inspect the SQLite Database
-
-If SQLite CLI is installed, you can inspect the database with:
-
+### Step 1: Open Terminal in Project Directory
 ```bash
-cd /opt/lampp/htdocs/Mobile-hub
-sqlite3 mobilehub.db ".tables"
+cd /opt/lampp/htdocs/veronic/Mobile-hub
 ```
 
-View data from a table:
-
-```bash
-sqlite3 mobilehub.db "SELECT * FROM products;"
-```
-
-You can also open the database using a GUI tool such as DB Browser for SQLite.
-
-## Useful Commands
-
-### Install dependencies
-
+### Step 2: Install All Dependencies
 ```bash
 npm install
 ```
 
-### Run the app
+### Step 3: Build the React Frontend (Vite)
+This compiles the modern React frontend directly into production assets:
+```bash
+npm run build
+```
 
+### Step 4: Start the Server (Node.js + Express + SQLite + Firebase Sync)
 ```bash
 npm start
 ```
 
-### Run development mode
+### Step 5: Access the Application
+Open any web browser and visit:
+```text
+http://localhost:3002
+```
 
+---
+
+## 🔥 Firebase Cloud Database Synchronization
+
+All tables in SQLite are automatically mirrored in real-time to **Firebase Firestore** (`stockly-dcbdb`).
+
+To manually run a full database synchronization to Firebase at any time:
+```bash
+npm run firebase-sync
+```
+
+You can also check Firebase status via the API:
+```bash
+curl http://localhost:3002/api/firebase/status
+```
+
+---
+
+## 🛠️ Development Mode (Live Hot-Reload)
+
+If you are developing and want live auto-refresh for React:
+
+**Terminal 1 (Start Backend API on Port 3002):**
+```bash
+npm run server
+```
+
+**Terminal 2 (Start React Vite Dev Server with HMR):**
 ```bash
 npm run dev
 ```
 
-### Stop the running server
+---
 
-If you are running the server in a terminal, press:
+## 🛑 How to Stop or Restart the Server
 
-```text
-Ctrl + C
+### Stop the Server
+Press `Ctrl + C` in the terminal running the server.
+
+### Free Port 3002 (If Port is Busy)
+```bash
+fuser -k 3002/tcp
 ```
 
-### Reinstall dependencies cleanly
-
+### Clean Rebuild
 ```bash
-rm -rf node_modules package-lock.json
+rm -rf node_modules
 npm install
-```
-
-## Project Structure
-
-```text
-Mobile-hub/
-├── public/
-├── server.js
-├── package.json
-├── mobilehub.db
-└── README.md
-```
-
-## Troubleshooting
-
-### Port already in use
-
-If `http://localhost:3002` is not available, check whether another process is using the port:
-
-```bash
-lsof -i :3002
-```
-
-If needed, stop the process and restart the server.
-
-### Database connection error
-
-If SQLite fails to connect:
-
-1. confirm the project folder has write permission
-2. check whether `mobilehub.db` is locked by another process
-3. restart the server
-
-### Missing dependency error
-
-Run:
-
-```bash
-npm install
-```
-
-## Notes
-
-- The frontend is served from the `public/` folder.
-- The backend API is handled in `server.js`.
-- The SQLite database file is created automatically and does not require a separate database server setup.
-
-## Production/Local Deployment Summary
-
-For local development:
-
-```bash
-cd /opt/lampp/htdocs/Mobile-hub
-npm install
+npm run build
 npm start
 ```
 
-Then visit:
+---
 
-```text
-http://localhost:3002
-```
+## 📁 System Architecture & Features
+
+- **Products Page**: 4-column product cards with live inventory counters, barcode generator, and stock indicators.
+- **Smart Billing System**: POS click-to-add product cards with floating slide-up bill view, GST calculation, discounts, and invoice generation.
+- **Tax Invoice Modal & Print/PDF**: Official tax invoice design matching Image 5 specifications with instant browser print, downloadable A4 PDF, and direct WhatsApp sharing.
+- **Repairs Tracker**: Repair ticket management with status badges and device diagnostics.
+- **Staff Directory**: Attendance tracking (Present/Absent toggles) and role directory.
+- **Business Analytics**: Visual charts, sales summaries, and exportable reports.
+- **Database**: Embedded high-performance local SQLite database (`mobilehub.db`) with real-time automatic cloud replication to **Firebase Firestore**.

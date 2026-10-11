@@ -1,64 +1,66 @@
+require('dotenv').config();
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const DbAdapter = require('./dbAdapter');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const fs = require('fs');
+const firebaseBackend = require('./firebaseBackend');
 
 const app = express();
-const PORT = 3002;
+const PORT = process.env.PORT || 3002;
 const projectRoot = __dirname;
 const publicPath = path.join(projectRoot, 'public');
-const dbPath = path.join(projectRoot, 'mobilehub.db');
+const dbDir = process.env.STOCKLY_DATA_DIR || projectRoot;
+if (!fs.existsSync(dbDir)) {
+    try { fs.mkdirSync(dbDir, { recursive: true }); } catch (e) {}
+}
+const dbPath = path.join(dbDir, 'mobilehub.db');
+
+// Seed database on first desktop launch if needed
+if (dbDir !== projectRoot && !fs.existsSync(dbPath)) {
+    const seedCandidates = [
+        path.join(projectRoot, 'mobilehub.db'),
+        path.join(projectRoot.replace('app.asar', 'app.asar.unpacked'), 'mobilehub.db')
+    ];
+    for (const cand of seedCandidates) {
+        if (fs.existsSync(cand)) {
+            try {
+                fs.copyFileSync(cand, dbPath);
+                console.log('📦 Initialized persistent user database from seed database:', cand);
+                break;
+            } catch (e) {
+                console.warn('Could not copy seed database from', cand, e.message);
+            }
+        }
+    }
+}
 
 // Middleware - Increased limit for image uploads
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(publicPath));
+app.use('/images', express.static(path.join(projectRoot, 'images')));
 
-// Database connection
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error connecting to database:', err.message);
-    } else {
-        console.log('✅ Connected to SQLite database');
-        initializeDatabase();
-        startServer();
-    }
-});
+// Database connection using built-in / adapted SQLite
+const db = new DbAdapter(dbPath);
 
-// Promise wrappers
-function dbRun(sql, params = []) {
-    return new Promise((resolve, reject) => {
-        db.run(sql, params, function (err) {
-            if (err) reject(err);
-            else resolve(this);
-        });
-    });
-}
+const dbRun = (sql, params = []) => db.run(sql, params);
+const dbGet = (sql, params = []) => db.get(sql, params);
+const dbAll = (sql, params = []) => db.all(sql, params);
 
-function dbGet(sql, params = []) {
-    return new Promise((resolve, reject) => {
-        db.get(sql, params, (err, row) => {
-            if (err) reject(err);
-            else resolve(row);
-        });
-    });
-}
-
-function dbAll(sql, params = []) {
-    return new Promise((resolve, reject) => {
-        db.all(sql, params, (err, rows) => {
-            if (err) reject(err);
-            else resolve(rows);
-        });
-    });
-}
+initializeDatabase();
+startServer();
 
 function startServer() {
     app.listen(PORT, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
         console.log(`📱 Open http://localhost:${PORT} in your browser`);
+        if (firebaseBackend.isInitialized) {
+            console.log('🔄 Triggering background Firebase sync...');
+            firebaseBackend.syncAllTables(db).catch(err => console.error('Initial sync error:', err.message));
+        }
     });
 }
 
@@ -299,6 +301,7 @@ app.post('/api/products', async (req, res) => {
         `, [name, sku, category || '', brand || '', stock || 0, minStock || 5, price || 0, costPrice || 0, supplier || '', batchNumber || '', photoData || '']);
 
         const newProduct = await dbGet("SELECT * FROM products WHERE id = ?", [result.lastID]);
+        if (newProduct) firebaseBackend.syncDoc('products', newProduct.id, newProduct);
         res.json({ success: true, product: newProduct });
     } catch (err) {
         if (err.message.includes('UNIQUE')) res.status(400).json({ error: 'SKU already exists' });
@@ -318,6 +321,7 @@ app.put('/api/products/:id', async (req, res) => {
 
         if (result.changes === 0) return res.status(404).json({ error: 'Product not found' });
         const updated = await dbGet("SELECT * FROM products WHERE id = ?", [id]);
+        if (updated) firebaseBackend.syncDoc('products', updated.id, updated);
         res.json({ success: true, product: updated });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -328,6 +332,7 @@ app.delete('/api/products/:id', async (req, res) => {
     try {
         const result = await dbRun("DELETE FROM products WHERE id = ?", [req.params.id]);
         if (result.changes === 0) return res.status(404).json({ error: 'Product not found' });
+        firebaseBackend.deleteDoc('products', req.params.id);
         res.json({ success: true, message: 'Product deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -388,9 +393,15 @@ app.post('/api/bills', async (req, res) => {
                 UPDATE products SET stock = stock - ?, sold_count = sold_count + ?
                 WHERE name = ?
             `, [item.quantity, item.quantity, item.productName]);
+            const updatedProd = await dbGet("SELECT * FROM products WHERE name = ?", [item.productName]);
+            if (updatedProd) firebaseBackend.syncDoc('products', updatedProd.id, updatedProd);
         }
 
         const newBill = await dbGet("SELECT * FROM bills WHERE id = ?", [billId]);
+        if (newBill) {
+            newBill.items = items;
+            firebaseBackend.syncDoc('bills', newBill.id, newBill);
+        }
         res.json({ success: true, bill: newBill });
     } catch (err) {
         if (err.message.includes('UNIQUE')) res.status(400).json({ error: 'Bill number already exists' });
@@ -415,6 +426,10 @@ app.delete('/api/bills/:id', async (req, res) => {
         }
 
         await dbRun("DELETE FROM bills WHERE id = ?", [req.params.id]);
+        firebaseBackend.deleteDoc('bills', req.params.id);
+        bill.items = items;
+        firebaseBackend.syncDoc('deleted_bills', bill.id, bill);
+
         res.json({ success: true, message: 'Bill moved to deleted records' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -449,6 +464,13 @@ app.post('/api/bills/:id/restore', async (req, res) => {
 
         await dbRun("DELETE FROM deleted_bills WHERE id = ?", [req.params.id]);
         await dbRun("DELETE FROM deleted_bill_items WHERE bill_id = ?", [req.params.id]);
+
+        const restoredBill = await dbGet("SELECT * FROM bills WHERE id = ?", [newId]);
+        if (restoredBill) {
+            restoredBill.items = await dbAll("SELECT * FROM bill_items WHERE bill_id = ?", [newId]);
+            firebaseBackend.syncDoc('bills', newId, restoredBill);
+        }
+        firebaseBackend.deleteDoc('deleted_bills', req.params.id);
 
         res.json({ success: true, message: 'Bill restored successfully' });
     } catch (err) {
@@ -501,6 +523,7 @@ app.post('/api/repairs', async (req, res) => {
         `, [customerName, phone || '', deviceModel, issue || '', status || 'pending', estimatedCost || 0, receivedDate || new Date().toISOString().split('T')[0], imageData || '']);
 
         const newRepair = await dbGet("SELECT * FROM repairs WHERE id = ?", [result.lastID]);
+        if (newRepair) firebaseBackend.syncDoc('repairs', newRepair.id, newRepair);
         res.json({ success: true, repair: newRepair });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -519,6 +542,7 @@ app.put('/api/repairs/:id', async (req, res) => {
 
         if (result.changes === 0) return res.status(404).json({ error: 'Repair not found' });
         const updated = await dbGet("SELECT * FROM repairs WHERE id = ?", [id]);
+        if (updated) firebaseBackend.syncDoc('repairs', updated.id, updated);
         res.json({ success: true, repair: updated });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -529,6 +553,7 @@ app.delete('/api/repairs/:id', async (req, res) => {
     try {
         const result = await dbRun("DELETE FROM repairs WHERE id = ?", [req.params.id]);
         if (result.changes === 0) return res.status(404).json({ error: 'Repair not found' });
+        firebaseBackend.deleteDoc('repairs', req.params.id);
         res.json({ success: true, message: 'Repair deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -569,6 +594,7 @@ app.post('/api/staff', async (req, res) => {
         `, [name, role || '', phone || '', status || 'active', workingNow ? 1 : 0, onLeave ? 1 : 0, attendance || 'absent']);
 
         const newStaff = await dbGet("SELECT * FROM staff WHERE id = ?", [result.lastID]);
+        if (newStaff) firebaseBackend.syncDoc('staff', newStaff.id, newStaff);
         res.json({ success: true, staff: newStaff });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -587,6 +613,7 @@ app.put('/api/staff/:id', async (req, res) => {
 
         if (result.changes === 0) return res.status(404).json({ error: 'Staff not found' });
         const updated = await dbGet("SELECT * FROM staff WHERE id = ?", [id]);
+        if (updated) firebaseBackend.syncDoc('staff', updated.id, updated);
         res.json({ success: true, staff: updated });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -597,6 +624,7 @@ app.delete('/api/staff/:id', async (req, res) => {
     try {
         const result = await dbRun("DELETE FROM staff WHERE id = ?", [req.params.id]);
         if (result.changes === 0) return res.status(404).json({ error: 'Staff not found' });
+        firebaseBackend.deleteDoc('staff', req.params.id);
         res.json({ success: true, message: 'Staff deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -634,6 +662,17 @@ app.post('/api/attendance', async (req, res) => {
         }
 
         await dbRun("UPDATE staff SET attendance = ? WHERE id = ?", [status || 'absent', staffId]);
+
+        // Sync to Firebase
+        const updatedRecord = await dbGet("SELECT * FROM attendance_records WHERE staff_id = ? AND date = ?", [staffId, date]);
+        if (updatedRecord) {
+            firebaseBackend.syncDoc('attendance_records', `${staffId}_${date}`, updatedRecord);
+        }
+        const updatedStaff = await dbGet("SELECT * FROM staff WHERE id = ?", [staffId]);
+        if (updatedStaff) {
+            firebaseBackend.syncDoc('staff', staffId, updatedStaff);
+        }
+
         res.json({ success: true, message: 'Attendance updated' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -714,6 +753,26 @@ app.get('/api/reports/sales', async (req, res) => {
             bill.items = await dbAll("SELECT * FROM bill_items WHERE bill_id = ?", [bill.id]);
         }
         res.json(bills);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ==============================================
+// FIREBASE API
+// ==============================================
+
+app.get('/api/firebase/status', (req, res) => {
+    res.json({
+        connected: firebaseBackend.isInitialized,
+        projectId: process.env.FIREBASE_PROJECT_ID || 'stockly-dcbdb'
+    });
+});
+
+app.post('/api/firebase/sync', async (req, res) => {
+    try {
+        const result = await firebaseBackend.syncAllTables(db);
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

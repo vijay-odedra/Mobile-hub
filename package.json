@@ -1,16 +1,95 @@
 {
-  "name": "mobile-hub",
+  "name": "stockly",
   "version": "1.0.0",
-  "description": "MobileHub retail management dashboard",
-  "main": "server.js",
+  "description": "Stockly retail and inventory management suite",
+  "main": "electron/main.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "server": "node server.js",
+    "dev": "vite",
+    "build": "vite build",
+    "app": "npm run build && npm start",
+    "firebase-sync": "node scripts/sync-firebase.js",
+    "electron:dev": "electron electron/main.js",
+    "dist:win": "node scripts/build-win.js"
+  },
+  "build": {
+    "appId": "com.stockly.retail",
+    "productName": "Stockly",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "public/**/*",
+      "images/**/*",
+      "server.js",
+      "dbAdapter.js",
+      "firebaseBackend.js",
+      "firebase-service-account.json",
+      ".env",
+      "mobilehub.db",
+      "package.json"
+    ],
+    "extraFiles": [
+      {
+        "from": "database-and-config",
+        "to": "database-and-config",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "APK",
+        "to": "APK",
+        "filter": ["**/*"]
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "mobilehub.db",
+      "firebase-service-account.json",
+      ".env"
+    ],
+    "win": {
+      "signExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Stockly",
+      "uninstallDisplayName": "Stockly Retail & Inventory Suite",
+      "runAfterFinish": true
+    }
   },
   "dependencies": {
     "body-parser": "^2.3.0",
+    "chart.js": "^4.5.1",
     "cors": "^2.8.6",
+    "dotenv": "^18.0.7",
     "express": "^5.2.1",
+    "firebase": "^13.0.0",
+    "firebase-admin": "^14.5.0",
+    "html2pdf.js": "^0.14.0",
+    "jsbarcode": "^3.12.3",
+    "lucide-react": "^1.54.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
+    "vite": "^8.3.4"
   }
 }

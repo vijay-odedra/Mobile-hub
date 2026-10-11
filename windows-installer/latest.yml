@@ -1,0 +1,8 @@
+version: 1.0.0
+files:
+  - url: Stockly-Setup-1.0.0.exe
+    sha512: JNoOdAo5czHA6mYFFUMmTAwFdVcFwWLSf1VaSuVwyE/DfkN5tLesL4+GJktihG5rZdAyOIImIf1TD6m+XVS6eA==
+    size: 170184444
+path: Stockly-Setup-1.0.0.exe
+sha512: JNoOdAo5czHA6mYFFUMmTAwFdVcFwWLSf1VaSuVwyE/DfkN5tLesL4+GJktihG5rZdAyOIImIf1TD6m+XVS6eA==
+releaseDate: '2026-10-11T01:21:24.123Z'

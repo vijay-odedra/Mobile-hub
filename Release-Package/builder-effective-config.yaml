@@ -1,0 +1,47 @@
+directories:
+  output: release
+  buildResources: build
+appId: com.stockly.retail
+productName: Stockly
+files:
+  - filter:
+      - electron/**/*
+      - public/**/*
+      - images/**/*
+      - server.js
+      - dbAdapter.js
+      - firebaseBackend.js
+      - firebase-service-account.json
+      - .env
+      - mobilehub.db
+      - package.json
+extraFiles:
+  - from: database-and-config
+    to: database-and-config
+    filter:
+      - '**/*'
+  - from: APK
+    to: APK
+    filter:
+      - '**/*'
+asar: true
+asarUnpack:
+  - mobilehub.db
+  - firebase-service-account.json
+  - .env
+win:
+  signExecutable: false
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: build/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Stockly
+  uninstallDisplayName: Stockly Retail & Inventory Suite
+  runAfterFinish: true
+electronVersion: 44.7.0

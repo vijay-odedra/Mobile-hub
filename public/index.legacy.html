@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Veronic MobileHub | Complete Retail Management Suite</title>
+  <link rel="icon" type="image/png" href="/images/logo.png">
+  <link rel="shortcut icon" href="/images/logo.png">
+  <link rel="apple-touch-icon" href="/images/logo.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    :root {
+      --primary: #6d54fe;
+      --primary-gradient: linear-gradient(135deg, #6d54fe 0%, #7b61ff 100%);
+      --primary-light: #f4f3ff;
+      --primary-border: #edeef6;
+      --text-dark: #1e1e2d;
+      --text-muted: #78829d;
+      --bg-page: #f6f7fc;
+      --card-bg: #ffffff;
+      --card-shadow: 0 4px 20px rgba(109, 84, 254, 0.04);
+      --card-radius: 20px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+    body { background: #f6f7fc; height: 100vh; overflow: hidden; color: #1e1e2d; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6d54fe; }
+
+    /* ========== AUTH OVERLAY ========== */
+    .auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(15, 23, 42, 0.82) 0%, rgba(30, 27, 75, 0.88) 100%); backdrop-filter: blur(14px); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+    .auth-card { background: #ffffff; width: 460px; max-width: 90%; border-radius: 36px; box-shadow: 0 30px 60px rgba(109,84,254,0.18), 0 10px 30px rgba(0,0,0,0.1); padding: 2.4rem; animation: fadeSlideUp 0.4s ease; border: 1px solid rgba(255,255,255,0.9); }
+    @keyframes fadeSlideUp { from { opacity:0; transform:translateY(30px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+    .auth-tabs { display: flex; gap: 0.8rem; background: #f4f3ff; padding: 0.4rem; border-radius: 60px; margin-bottom: 1.8rem; }
+    .auth-tab { flex: 1; text-align: center; padding: 0.65rem; font-weight: 700; border-radius: 40px; cursor: pointer; color: #64748b; transition: all 0.25s; }
+    .auth-tab.active { background: var(--primary-gradient); color: white; box-shadow: 0 4px 12px rgba(109,84,254,0.3); }
+    .auth-form { display: flex; flex-direction: column; gap: 1.1rem; }
+    .auth-form input { padding: 13px 18px; border: 1.5px solid #e2e8f0; border-radius: 40px; outline: none; font-size: 0.95rem; transition: all 0.2s; background: white; }
+    .auth-form input:focus { border-color: #6d54fe; box-shadow: 0 0 0 3px rgba(109,84,254,0.15); }
+    .auth-btn { background: var(--primary-gradient); color: white; border: none; padding: 13px; border-radius: 40px; font-weight: 700; cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 15px rgba(109,84,254,0.3); font-size: 0.95rem; }
+    .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(109,84,254,0.4); }
+    
+    /* ========== APP SHELL ========== */
+    .dashboard-container { display: flex; height: 100vh; width: 100%; background: #f6f7fc; overflow: hidden; }
+    .sidebar { width: 250px; background: #ffffff; color: #525c76; display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0; border-right: 1px solid #ebebf5; }
+    .sidebar-header { padding: 24px 20px 18px; border-bottom: 1px solid #f2f3f9; }
+    .logo-m-badge { width: 36px; height: 36px; border-radius: 10px; background: #f4f3ff; display: flex; align-items: center; justify-content: center; }
+    .nav-menu { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; cursor: pointer; color: #596780; transition: all 0.2s; font-weight: 500; font-size: 0.9rem; }
+    .nav-item i { width: 20px; font-size: 1.05rem; color: #8c8fa7; }
+    .nav-item:hover { background: #f4f3ff; color: #6d54fe; }
+    .nav-item:hover i { color: #6d54fe; }
+    .nav-item.active { background: var(--primary-gradient); color: #ffffff; font-weight: 600; box-shadow: 0 4px 14px rgba(109, 84, 254, 0.32); }
+    .nav-item.active i { color: #ffffff; }
+    
+    .sidebar-footer { padding: 16px; border-top: 1px solid #f2f3f9; margin-top: auto; }
+    .user-avatar-purple { width: 38px; height: 38px; border-radius: 50%; background: #6d54fe; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; }
+    .sidebar-logout-btn { width: 100%; background: #f4f3ff; color: #6d54fe; border: none; border-radius: 12px; padding: 10px 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; transition: 0.2s; margin-top: 10px; }
+    .sidebar-logout-btn:hover { background: #ebe9fe; }
+    
+    /* ========== MAIN WRAPPER & TOP NAV ========== */
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    .top-navbar { height: 68px; background: transparent; padding: 14px 36px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .menu-toggle-btn { display: none; background: #ffffff; border: 1px solid #e7e8f2; border-radius: 10px; width: 36px; height: 36px; align-items: center; justify-content: center; cursor: pointer; color: #525c76; }
+    .top-search-bar { background: #ffffff; border: 1px solid #e7e8f2; border-radius: 30px; padding: 8px 18px; display: flex; align-items: center; gap: 10px; width: 360px; max-width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .top-search-bar input { border: none; outline: none; background: transparent; width: 100%; font-size: 0.88rem; color: #1e1e2d; }
+    .top-search-bar i { color: #8c8fa7; font-size: 0.9rem; }
+    .notification-btn { width: 40px; height: 40px; border-radius: 50%; background: #ffffff; border: 1px solid #e7e8f2; display: flex; align-items: center; justify-content: center; color: #525c76; cursor: pointer; position: relative; font-size: 1.1rem; transition: 0.2s; }
+    .notification-btn:hover { border-color: #6d54fe; color: #6d54fe; }
+    .notification-dot { position: absolute; top: -2px; right: -2px; background: #6d54fe; color: white; font-size: 0.65rem; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #ffffff; }
+    .top-user-pill { display: flex; align-items: center; gap: 10px; background: #ffffff; padding: 5px 14px 5px 5px; border-radius: 30px; border: 1px solid #e7e8f2; cursor: pointer; transition: 0.2s; }
+    .top-user-pill:hover { border-color: #6d54fe; }
+    .top-user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #6d54fe; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+    .top-user-name { font-weight: 600; font-size: 0.88rem; color: #1e1e2d; }
+    .main-content { flex: 1; overflow-y: auto; padding: 24px 36px 36px; }
+    
+    /* ========== DASHBOARD CARDS ========== */
+    .page-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 16px; }
+    .page-title { font-size: 1.75rem; font-weight: 800; color: #1e1e2d; line-height: 1.2; display: flex; align-items: center; gap: 12px; }
+    .page-subtitle { color: #78829d; font-size: 0.88rem; margin-top: 3px; }
+    .date-chip { display: flex; align-items: center; gap: 12px; background: #ffffff; border: 1px solid #e7e8f2; border-radius: 14px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    
+    .dash-stats-row-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 18px; }
+    .dash-stats-row-mid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px; }
+    .dash-card-white { background: #ffffff; border-radius: 20px; padding: 20px 22px; border: 1px solid #edeef6; box-shadow: 0 4px 20px rgba(109, 84, 254, 0.03); display: flex; align-items: flex-start; justify-content: space-between; position: relative; transition: all 0.25s; }
+    .dash-card-white:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(109, 84, 254, 0.07); border-color: #dcd7fe; }
+    .dash-card-label { font-size: 0.88rem; font-weight: 600; color: #1e1e2d; }
+    .dash-card-value { font-size: 2.1rem; font-weight: 800; color: #1e1e2d; margin: 4px 0 6px; }
+    .dash-card-value.purple-num { color: #5846eb; }
+    .dash-card-sub { font-size: 0.78rem; color: #78829d; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    .dash-icon-circle { width: 44px; height: 44px; border-radius: 50%; background: #f4f3ff; color: #6d54fe; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+    .dash-icon-circle.pink-circle { background: #fdf2f8; color: #ec4899; }
+    
+    /* ========== CHARTS & BANNER ========== */
+    .dash-charts-row { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; margin-bottom: 20px; }
+    .dash-chart-card { background: #ffffff; border-radius: 22px; padding: 22px 24px; border: 1px solid #edeef6; box-shadow: 0 4px 20px rgba(109, 84, 254, 0.03); }
+    .chart-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .chart-card-title { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; color: #1e1e2d; }
+    .chart-select-pill { background: #ffffff; border: 1px solid #e7e8f2; border-radius: 20px; padding: 6px 14px; font-size: 0.8rem; font-weight: 600; color: #525c76; outline: none; cursor: pointer; }
+    .chart-legend-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #525c76; font-weight: 500; }
+    .chart-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+    
+    .dash-alert-banner { background: #ffffff; border: 1.5px solid #dcd7fe; border-radius: 18px; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; margin-top: 18px; box-shadow: 0 4px 15px rgba(109,84,254,0.03); cursor: pointer; transition: 0.2s; }
+    .dash-alert-banner:hover { border-color: #6d54fe; transform: translateY(-2px); }
+    .banner-icon-badge { width: 36px; height: 36px; border-radius: 50%; background: #6d54fe; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
+    .banner-arrow-btn { width: 32px; height: 32px; border-radius: 50%; background: #f4f3ff; color: #6d54fe; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+    
+    /* ========== COMMON CONTAINERS & SEARCH ========== */
+    .page-card-container { background: #ffffff; border-radius: 22px; padding: 24px; border: 1px solid #edeef6; box-shadow: 0 4px 20px rgba(109, 84, 254, 0.03); margin-bottom: 24px; }
+    .search-bar-custom { background: white; border-radius: 30px; padding: 6px 20px; display: flex; align-items: center; gap: 12px; border: 1px solid #edeef6; margin-bottom: 22px; box-shadow: 0 2px 6px rgba(0,0,0,0.01); transition: 0.2s; }
+    .search-bar-custom:focus-within { border-color: #6d54fe; box-shadow: 0 0 0 3px rgba(109,84,254,0.1); }
+    .search-bar-custom input { flex: 1; border: none; outline: none; padding: 10px 0; background: transparent; font-size: 0.92rem; color: #1e1e2d; }
+    .search-bar-custom i { color: #8c8fa7; font-size: 0.95rem; }
+    
+    /* ========== TABLES ========== */
+    .products-table, .staff-table, .history-table { width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; }
+    .products-table th, .staff-table th, .history-table th { background: #f8f7ff; padding: 14px 16px; text-align: left; font-weight: 700; color: #2d2b52; border-bottom: 1.5px solid #edeef6; font-size: 0.85rem; }
+    .products-table td, .staff-table td, .history-table td { padding: 14px 16px; border-bottom: 1px solid #f2f3f9; vertical-align: middle; font-size: 0.88rem; }
+    .products-table tr:hover td, .staff-table tr:hover td, .history-table tr:hover td { background: #fafaff; }
+    .product-img-thumb { width: 50px; height: 50px; border-radius: 14px; object-fit: cover; background: #f4f3ff; border: 1px solid #edeef6; display: block; }
+    .sku-pill { display: inline-block; padding: 3px 10px; background: #f4f3ff; color: #6d54fe; font-size: 0.75rem; font-weight: 700; border-radius: 20px; border: 1px solid #edeef6; }
+    
+    /* ========== BUTTONS ========== */
+    .btn-primary, .stock-action-btn.primary { background: var(--primary-gradient); color: white; border: none; padding: 10px 24px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 14px rgba(109, 84, 254, 0.3); font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary:hover, .stock-action-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(109, 84, 254, 0.4); }
+    .btn-secondary, .stock-action-btn { background: #f4f3ff; color: #6d54fe; border: 1px solid #e0dcfe; padding: 10px 22px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-secondary:hover, .stock-action-btn:hover { background: #ebe9fe; transform: translateY(-1px); }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 8px 18px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+    .btn-danger:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 8px 18px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+    .btn-success:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+    .btn-pdf { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 9px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+    .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(239,68,68,0.3); }
+    
+    /* Action Icon Buttons */
+    .action-cell { display: flex; align-items: center; gap: 8px; }
+    .btn-view-sm, .btn-print-sm, .btn-delete-sm, .btn-whatsapp-sm, .btn-edit-sm { width: 34px; height: 34px; border-radius: 50%; border: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; font-size: 0.88rem; flex-shrink: 0; }
+    .btn-view-sm { background: #f4f3ff; color: #6d54fe; }
+    .btn-view-sm:hover { background: #6d54fe; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(109,84,254,0.3); }
+    .btn-print-sm { background: #eff6ff; color: #2563eb; }
+    .btn-print-sm:hover { background: #2563eb; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
+    .btn-delete-sm { background: #fef2f2; color: #ef4444; }
+    .btn-delete-sm:hover { background: #ef4444; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(239,68,68,0.3); }
+    .btn-whatsapp-sm { background: #ecfdf5; color: #059669; }
+    .btn-whatsapp-sm:hover { background: #10b981; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16,185,129,0.3); }
+    .btn-edit-sm { background: #fef3c7; color: #b45309; }
+    .btn-edit-sm:hover { background: #f59e0b; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(245,158,11,0.3); }
+    
+    /* ========== BADGES ========== */
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 0.74rem; font-weight: 600; }
+    .status-active { background: #dcfce7; color: #15803d; }
+    .status-inactive { background: #fef3c7; color: #b45309; }
+    .status-leave { background: #fee2e2; color: #b91c1c; }
+    .status-pending { background: #fef3c7; color: #b45309; }
+    .status-in-progress { background: #e0e7ff; color: #4338ca; }
+    .status-completed { background: #dcfce7; color: #15803d; }
+    
+    /* ========== STOCK MANAGEMENT GRID ========== */
+    .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin-top: 18px; }
+    .stock-card-round { background: white; border-radius: 28px; padding: 22px 18px; text-align: center; border: 1px solid #edeef6; box-shadow: 0 4px 18px rgba(109,84,254,0.03); transition: all 0.25s; display: flex; flex-direction: column; align-items: center; justify-content: space-between; position: relative; }
+    .stock-card-round:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(109,84,254,0.08); border-color: #dcd7fe; }
+    .stock-card-round .product-img-round { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: #f4f3ff; border: 2.5px solid #edeef6; margin-bottom: 8px; }
+    .stock-card-round .product-name-round { font-weight: 700; font-size: 1rem; color: #1e1e2d; margin: 4px 0 2px; line-height: 1.3; }
+    .stock-card-round .batch-code-round { font-size: 0.72rem; color: #6d54fe; background: #f4f3ff; padding: 3px 12px; border-radius: 20px; margin-bottom: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .stock-indicator { display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; background: #fafaff; padding: 8px 14px; border-radius: 20px; border: 1px solid #edeef6; width: 100%; box-sizing: border-box; }
+    .stock-card-round .stock-circle { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; color: white; background: #6d54fe; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .stock-card-round .stock-circle.low { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .stock-card-round .stock-circle.medium { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .stock-card-round .stock-circle.high { background: linear-gradient(135deg, #10b981, #059669); }
+    .min-stock-label { font-size: 0.72rem; color: #8c8fa7; font-weight: 500; }
+    .stock-card-round .action-row, .action-row { display: flex; gap: 8px; width: 100%; justify-content: center; }
+    .action-row button, .stock-card-round .action-row button { flex: 1; background: #f4f3ff; color: #6d54fe; border: 1px solid #dcd7fe; padding: 7px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .action-row button:hover, .stock-card-round .action-row button:hover { background: #6d54fe; color: white; border-color: #6d54fe; transform: translateY(-1px); }
+    .action-row button.barcode-btn { background: #f4f3ff; color: #6d54fe; }
+    .action-row button.edit-stock-btn { background: #fef3c7; color: #b45309; border-color: #fde68a; }
+    .action-row button.edit-stock-btn:hover { background: #f59e0b; color: white; border-color: #f59e0b; }
+    
+    /* Barcode Modal & Labels */
+    .barcode-modal { max-width: 820px !important; }
+    .barcode-print-area { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; max-height: 480px; overflow-y: auto; padding: 14px; background: #fafaff; border-radius: 20px; border: 1px solid #edeef6; }
+    .barcode-label { background: white; border: 1.5px dashed #cbd5e1; border-radius: 16px; padding: 12px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .barcode-label-title { font-size: 0.84rem; font-weight: 700; color: #1e1e2d; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .barcode-svg { width: 100%; max-height: 55px; }
+    .barcode-label-text { font-size: 0.75rem; font-weight: 600; color: #6d54fe; letter-spacing: 1px; margin-top: 4px; }
+    
+    /* ========== BILLING & CART ========== */
+    .billing-container { background: white; border-radius: 24px; padding: 26px; border: 1px solid #edeef6; box-shadow: 0 4px 20px rgba(109, 84, 254, 0.03); }
+    .billing-intro { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; }
+    .customer-section { background: #fafaff; border-radius: 20px; padding: 20px 22px; margin-bottom: 22px; border: 1px solid #edeef6; }
+    .customer-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .customer-grid input { padding: 12px 18px; border: 1.5px solid #e2e8f0; border-radius: 24px; outline: none; font-size: 0.92rem; background: white; width: 100%; transition: 0.2s; }
+    .customer-grid input:focus { border-color: #6d54fe; box-shadow: 0 0 0 3px rgba(109,84,254,0.12); }
+    .add-item-row { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .add-item-row select { flex: 2; min-width: 200px; padding: 11px 16px; border: 1.5px solid #e2e8f0; border-radius: 24px; outline: none; background: white; font-size: 0.92rem; transition: 0.2s; }
+    .add-item-row input { width: 110px; padding: 11px 16px; border: 1.5px solid #e2e8f0; border-radius: 24px; outline: none; background: white; font-size: 0.92rem; transition: 0.2s; }
+    .add-item-row select:focus, .add-item-row input:focus { border-color: #6d54fe; box-shadow: 0 0 0 3px rgba(109,84,254,0.12); }
+    .stock-info-pill { display: inline-flex; align-items: center; gap: 8px; font-size: 0.84rem; color: #6d54fe; background: #f4f3ff; padding: 6px 14px; border-radius: 20px; margin-bottom: 16px; font-weight: 500; }
+    .cart-table { width: 100%; border-collapse: collapse; margin: 16px 0; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #edeef6; }
+    .cart-table th { background: #f8f7ff; padding: 12px 14px; text-align: left; font-weight: 700; color: #2d2b52; font-size: 0.85rem; border-bottom: 1px solid #edeef6; }
+    .cart-table td { padding: 12px 14px; border-bottom: 1px solid #f2f3f9; vertical-align: middle; font-size: 0.88rem; }
+    .cart-table input { width: 85px; padding: 7px 10px; border: 1.5px solid #e2e8f0; border-radius: 12px; outline: none; font-size: 0.88rem; background: #fafaff; text-align: center; font-weight: 600; transition: 0.2s; }
+    .cart-table input:focus { border-color: #6d54fe; background: white; box-shadow: 0 0 0 2px rgba(109,84,254,0.12); }
+    .total-cell { font-weight: 700; color: #1e1e2d; }
+    .remove-item { color: #ef4444; cursor: pointer; padding: 8px; border-radius: 8px; transition: 0.2s; font-size: 0.95rem; }
+    .remove-item:hover { background: #fee2e2; }
+    .bill-summary { background: #fafaff; border-radius: 20px; padding: 20px 24px; margin-top: 20px; border: 1px solid #edeef6; }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.92rem; color: #596780; font-weight: 500; }
+    .summary-row span:last-child { font-weight: 700; color: #1e1e2d; }
+    .discount-label { color: #10b981 !important; }
+    .discount-label span:last-child { color: #10b981 !important; }
+    .summary-row.total { font-weight: 800; font-size: 1.35rem; border-top: 2px solid #edeef6; padding-top: 12px; margin-top: 8px; color: #1e1e2d; }
+    .summary-row.total span:last-child { color: #6d54fe; font-size: 1.45rem; font-weight: 800; }
+    .bill-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+    
+    /* Invoice Popup */
+    .invoice-popup { background: white; max-width: 640px; width: 90%; border-radius: 28px; padding: 32px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.22); animation: modalPop 0.3s ease; border: 1px solid #edeef6; }
+    .invoice-popup table { width: 100%; border-collapse: collapse; margin: 16px 0; border: 1px solid #edeef6; border-radius: 12px; overflow: hidden; }
+    .invoice-popup th { background: #f8f7ff; color: #1e1e2d; padding: 10px 12px; text-align: left; font-size: 0.82rem; font-weight: 700; border-bottom: 1.5px solid #edeef6; }
+    .invoice-popup td { padding: 10px 12px; border-bottom: 1px solid #f2f3f9; font-size: 0.86rem; }
+    
+    /* ========== BILL HISTORY ========== */
+    .history-table-wrap { background: white; border-radius: 20px; border: 1px solid #edeef6; box-shadow: 0 4px 20px rgba(109, 84, 254, 0.03); overflow-x: auto; }
+    .badge-total { font-weight: 800; color: #1e1e2d; font-size: 0.95rem; }
+    
+    /* ========== REPAIRS ========== */
+    .repair-container { background: white; border-radius: 24px; padding: 26px; border: 1px solid #edeef6; box-shadow: 0 4px 20px rgba(109, 84, 254, 0.03); }
+    .repair-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
+    .repairs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; margin-top: 18px; }
+    .repair-card { background: white; border-radius: 22px; border: 1px solid #edeef6; transition: all 0.25s; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.02); }
+    .repair-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(109,84,254,0.07); border-color: #dcd7fe; }
+    .repair-card-header { background: #fafaff; padding: 16px 20px; border-bottom: 1px solid #edeef6; display: flex; justify-content: space-between; align-items: center; font-size: 0.92rem; }
+    .repair-card-body { padding: 18px 20px; }
+    .repair-info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 0.88rem; color: #525c76; }
+    .repair-icon { width: 32px; height: 32px; border-radius: 50%; background: #f4f3ff; color: #6d54fe; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+    .repair-detail { flex: 1; }
+    .repair-actions { display: flex; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #f2f3f9; }
+    .btn-view-repair, .btn-edit-repair, .btn-delete-repair { flex: 1; padding: 7px 12px; border-radius: 20px; border: none; font-weight: 600; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
+    .btn-view-repair { background: #f4f3ff; color: #6d54fe; }
+    .btn-view-repair:hover { background: #6d54fe; color: white; }
+    .btn-edit-repair { background: #fef3c7; color: #b45309; }
+    .btn-edit-repair:hover { background: #f59e0b; color: white; }
+    .btn-delete-repair { background: #fee2e2; color: #b91c1c; }
+    .btn-delete-repair:hover { background: #ef4444; color: white; }
+    .repair-status { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .repair-filter-btns { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .repair-filter-btns button { padding: 8px 22px; border-radius: 30px; border: 1.5px solid #e2e8f0; background: white; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; color: #525c76; display: inline-flex; align-items: center; gap: 6px; }
+    .repair-filter-btns button:hover { border-color: #6d54fe; color: #6d54fe; }
+    .repair-filter-btns button.active-filter { background: #1e1e2d; color: white; border-color: #1e1e2d; box-shadow: 0 4px 12px rgba(30,30,45,0.18); }
+    .repair-filter-btns button.active-filter-pending { background: #f59e0b; color: white; border-color: #f59e0b; box-shadow: 0 4px 12px rgba(245,158,11,0.25); }
+    .repair-filter-btns button.active-filter-prog { background: #6d54fe; color: white; border-color: #6d54fe; box-shadow: 0 4px 12px rgba(109,84,254,0.25); }
+    .repair-filter-btns button.active-filter-done { background: #10b981; color: white; border-color: #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.25); }
+    .count-badge { display: inline-block; padding: 4px 12px; background: #f4f3ff; color: #6d54fe; border-radius: 20px; font-weight: 700; font-size: 0.8rem; border: 1px solid #edeef6; }
+    .empty-state-card { text-align: center; padding: 60px 20px; color: #8c8fa7; }
+    .empty-state-card i { font-size: 2.8rem; color: #dcd7fe; margin-bottom: 12px; display: block; }
+    .empty-state-card h3 { font-size: 1.15rem; color: #1e1e2d; margin-bottom: 6px; font-weight: 700; }
+    .empty-state-card p { font-size: 0.88rem; color: #78829d; }
+    .empty-repairs { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #8c8fa7; }
+    .empty-repairs i { color: #dcd7fe; margin-bottom: 12px; }
+    
+    /* ========== STAFF MANAGEMENT ========== */
+    .staff-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 24px; }
+    .staff-stat-card { border-radius: 22px; padding: 22px 24px; color: white; box-shadow: 0 4px 18px rgba(0,0,0,0.06); transition: all 0.25s; }
+    .staff-stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    .staff-stat-card .stat-num { font-size: 2.2rem; font-weight: 800; line-height: 1.1; margin-bottom: 4px; }
+    .staff-stat-card .stat-label { font-size: 0.85rem; font-weight: 500; opacity: 0.92; }
+    .staff-stat-card.sblue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .staff-stat-card.scyan { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+    .staff-stat-card.spink { background: linear-gradient(135deg, #ec4899, #be185d); }
+    .staff-stat-card.sgreen { background: linear-gradient(135deg, #10b981, #047857); }
+    .staff-stat-card.sorange { background: linear-gradient(135deg, #f59e0b, #b45309); }
+    .staff-stat-card.sred { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .staff-stat-card.spurple { background: linear-gradient(135deg, #6d54fe, #4338ca); }
+    .staff-filter-btns { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .staff-filter-btns button { padding: 8px 22px; border-radius: 30px; border: 1.5px solid #e2e8f0; background: white; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; color: #525c76; display: inline-flex; align-items: center; gap: 6px; }
+    .staff-filter-btns button:hover { border-color: #6d54fe; color: #6d54fe; }
+    .staff-filter-btns button.active-filter { background: #1e1e2d; color: white; border-color: #1e1e2d; box-shadow: 0 4px 12px rgba(30,30,45,0.18); }
+    .staff-filter-btns button.active-filter-green { background: #10b981; color: white; border-color: #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.25); }
+    .staff-filter-btns button.active-filter-red { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,0.25); }
+    .attendance-btn { padding: 5px 12px; border-radius: 20px; border: 1px solid #e2e8f0; background: white; font-weight: 600; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; margin-right: 4px; display: inline-flex; align-items: center; gap: 4px; color: #525c76; }
+    .attendance-btn:hover { transform: translateY(-1px); }
+    .attendance-btn.btn-present.active { background: #dcfce7; color: #15803d; border-color: #86efac; font-weight: 700; }
+    .attendance-btn.btn-absent.active { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; font-weight: 700; }
+    
+    /* ========== REPORTS ========== */
+    .reports-container { background: white; border-radius: 24px; padding: 26px; border: 1px solid #edeef6; box-shadow: 0 4px 20px rgba(109, 84, 254, 0.03); }
+    .reports-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 22px; background: #fafaff; padding: 14px 18px; border-radius: 20px; border: 1px solid #edeef6; }
+    .filter-row label { font-size: 0.85rem; color: #525c76; font-weight: 600; margin-right: 6px; }
+    .filter-row input[type="date"] { padding: 7px 14px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: white; outline: none; font-size: 0.85rem; color: #1e1e2d; }
+    .filter-row input[type="date"]:focus { border-color: #6d54fe; }
+    .quick-range-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+    .quick-range-btns button { padding: 7px 16px; border-radius: 20px; border: 1px solid #e2e8f0; background: white; cursor: pointer; transition: all 0.2s; font-size: 0.82rem; font-weight: 600; color: #525c76; }
+    .quick-range-btns button:hover { border-color: #6d54fe; color: #6d54fe; }
+    .quick-range-btns button.active { background: var(--primary-gradient); color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(109,84,254,0.25); }
+    .report-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin: 20px 0; }
+    .report-summary-item { background: #fafaff; border-radius: 18px; padding: 18px; text-align: center; border: 1px solid #edeef6; }
+    .report-summary-item .num { font-size: 1.85rem; font-weight: 800; color: #1e1e2d; }
+    .report-summary-item .label { color: #8c8fa7; font-size: 0.8rem; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .report-chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 24px 0; }
+    .report-chart-box { background: white; border-radius: 20px; padding: 20px; border: 1px solid #edeef6; }
+    .report-chart-box canvas { max-height: 240px; width: 100% !important; }
+    .top-products-list { max-height: 240px; overflow-y: auto; }
+    .top-product-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid #f2f3f9; font-size: 0.88rem; }
+    .top-product-item .rank { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: #f4f3ff; color: #6d54fe; font-weight: 700; font-size: 0.75rem; margin-right: 8px; }
+    .report-table-section { margin-top: 28px; }
+    .report-table-section h3 { font-size: 1.15rem; font-weight: 800; color: #1e1e2d; margin-bottom: 14px; }
+    .report-table { width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #edeef6; }
+    .report-table th { background: #f8f7ff; padding: 12px 14px; text-align: left; font-weight: 700; color: #2d2b52; font-size: 0.85rem; border-bottom: 1.5px solid #edeef6; }
+    .report-table td { padding: 12px 14px; border-bottom: 1px solid #f2f3f9; font-size: 0.85rem; }
+    .report-table tbody tr:hover { background: #fafaff; }
+    .loading { text-align: center; padding: 40px; color: #6d54fe; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .loading i { font-size: 2rem; }
+    
+    /* ========== LOW STOCK ALERTS ========== */
+    .lowstock-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 24px; }
+    .lowstock-stat-card { border-radius: 22px; padding: 22px 24px; color: white; box-shadow: 0 4px 18px rgba(0,0,0,0.06); }
+    .lowstock-stat-card .num { font-size: 2.2rem; font-weight: 800; line-height: 1.1; margin-bottom: 4px; }
+    .lowstock-stat-card .label { font-size: 0.85rem; font-weight: 500; opacity: 0.92; }
+    .lowstock-stat-card.ls-red { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .lowstock-stat-card.ls-orange { background: linear-gradient(135deg, #f59e0b, #b45309); }
+    .lowstock-stat-card.ls-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    .lowstock-stat-card.ls-purple { background: linear-gradient(135deg, #6d54fe, #4338ca); }
+    .lowstock-item-card { background: white; border-radius: 20px; padding: 16px 20px; margin-bottom: 12px; border: 1px solid #edeef6; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .lowstock-item-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(109,84,254,0.06); }
+    .stock-badge { display: inline-block; padding: 5px 14px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; }
+    .stock-badge.out { background: #fee2e2; color: #b91c1c; }
+    .stock-badge.low { background: #fef3c7; color: #b45309; }
+    
+    /* ========== MODALS ========== */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); z-index: 2100; display: flex; align-items: center; justify-content: center; }
+    .modal-card { background: white; max-width: 650px; width: 90%; border-radius: 32px; padding: 30px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.2); animation: modalPop 0.3s ease; }
+    @keyframes modalPop { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: 700; color: #1e1e2d; font-size: 0.88rem; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px 16px; border: 1.5px solid #e2e8f0; border-radius: 24px; outline: none; transition: all 0.2s; font-size: 0.92rem; background: white; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #6d54fe; box-shadow: 0 0 0 3px rgba(109,84,254,0.12); }
+    .img-preview { width: 120px; height: 120px; object-fit: cover; border-radius: 16px; border: 2px solid #e2e8f0; }
+    
+    .toast-msg { position: fixed; bottom: 30px; right: 30px; background: #1e1e2d; color: white; padding: 14px 24px; border-radius: 40px; box-shadow: 0 8px 30px rgba(0,0,0,0.2); z-index: 9999; font-weight: 600; display: flex; align-items: center; gap: 10px; animation: fadeSlideUp 0.3s ease; font-size: 0.92rem; }
+    
+    @media (max-width: 1100px) {
+      .dash-stats-row-top { grid-template-columns: 1fr; }
+      .dash-stats-row-mid { grid-template-columns: repeat(2, 1fr); }
+      .dash-charts-row { grid-template-columns: 1fr; }
+      .report-chart-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 850px) {
+      .sidebar { position: fixed; left: -260px; top: 0; bottom: 0; z-index: 1000; transition: left 0.3s ease; }
+      .sidebar.open { left: 0; }
+      .menu-toggle-btn { display: flex; }
+      .main-content { padding: 18px 20px; }
+      .top-navbar { padding: 12px 20px; }
+      .top-search-bar { width: 200px; }
+      .customer-grid { grid-template-columns: 1fr; }
+    }
+    @media print { body * { visibility: hidden; } .invoice-print-area, .invoice-print-area *, .report-print-area, .report-print-area * { visibility: visible; } .invoice-print-area, .report-print-area { position: fixed; left: 0; top: 0; width: 100%; padding: 20px; background: white; } .no-print { display: none !important; } }
+  </style>
+</head>
+<body>
+  <!-- AUTH OVERLAY -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <div style="text-align: center; margin-bottom: 22px;">
+        <img src="/images/logo.png" alt="Veronic Logo" style="max-height: 48px; max-width: 80%; object-fit: contain;">
+      </div>
+      <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="login">🔐 Login</div>
+        <div class="auth-tab" data-tab="signup">📝 Sign Up</div>
+      </div>
+      <div id="loginForm" class="auth-form">
+        <input type="text" id="loginUsername" placeholder="Username" value="admin">
+        <input type="password" id="loginPassword" placeholder="Password" value="admin123">
+        <button class="auth-btn" id="doLoginBtn">Access Dashboard</button>
+        <div id="loginError" style="color:#ef4444;"></div>
+      </div>
+      <div id="signupForm" class="auth-form" style="display: none;">
+        <input type="text" id="signupName" placeholder="Full Name">
+        <input type="text" id="signupUsername" placeholder="Username">
+        <input type="password" id="signupPassword" placeholder="Password (min 4 chars)">
+        <button class="auth-btn" id="doSignupBtn">Create & Login</button>
+        <div id="signupError" style="color:#ef4444;"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- DASHBOARD MAIN -->
+  <div id="dashboardMain" style="display: none;">
+    <div class="dashboard-container">
+      <div class="sidebar" id="appSidebar">
+        <div class="sidebar-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="logo-m-badge">
+              <i class="fas fa-layer-group" style="color:#6d54fe; font-size:1.3rem;"></i>
+            </div>
+            <div>
+              <h2 style="font-size:1.25rem; font-weight:800; line-height:1.2; color:#1e1e2d;">MobileHub</h2>
+              <span style="font-size:0.65rem; color:#8c8fa7; font-weight:700; text-transform:uppercase; letter-spacing:0.8px;">ENTERPRISE</span>
+            </div>
+          </div>
+        </div>
+        <div class="nav-menu">
+          <div class="nav-item active" data-page="dashboard"><i class="fas fa-home"></i> Dashboard</div>
+          <div class="nav-item" data-page="products"><i class="fas fa-boxes"></i> Products</div>
+          <div class="nav-item" data-page="stockManagement"><i class="fas fa-clipboard-list"></i> Stock Management</div>
+          <div class="nav-item" data-page="billing"><i class="fas fa-receipt"></i> Billing</div>
+          <div class="nav-item" data-page="history"><i class="fas fa-history"></i> Bill History</div>
+          <div class="nav-item" data-page="deleted"><i class="fas fa-trash-alt"></i> Deleted Records</div>
+          <div class="nav-item" data-page="repairs"><i class="fas fa-tools"></i> Repairs</div>
+          <div class="nav-item" data-page="staff"><i class="fas fa-users"></i> Staff Management</div>
+          <div class="nav-item" data-page="reports"><i class="fas fa-chart-line"></i> Reports</div>
+          <div class="nav-item" data-page="lowstock"><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</div>
+        </div>
+        <div class="sidebar-footer">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="user-avatar-purple" id="userAvatar">A</div>
+            <div>
+              <div style="font-weight:700; font-size:0.92rem; color:#1e1e2d;" id="userNameDisplay">Admin User</div>
+              <div style="font-size:0.75rem; color:#8c8fa7;" id="userEmailDisplay">Administrator</div>
+            </div>
+          </div>
+          <button class="sidebar-logout-btn" id="sidebarLogoutBtn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </div>
+      <div class="main-wrapper">
+        <div class="top-navbar">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <button class="menu-toggle-btn" id="menuToggleBtn"><i class="fas fa-bars"></i></button>
+            <div class="top-search-bar">
+              <i class="fas fa-search"></i>
+              <input type="text" id="globalTopSearch" placeholder="Search products, bills, customers...">
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div class="notification-btn" title="Low Stock & Orders">
+              <i class="far fa-bell"></i>
+              <span class="notification-dot" id="topAlertCount">1</span>
+            </div>
+            <div class="top-user-pill">
+              <div class="top-user-avatar">A</div>
+              <span class="top-user-name">Admin</span>
+              <i class="fas fa-chevron-down" style="font-size:0.7rem; color:#8c8fa7;"></i>
+            </div>
+          </div>
+        </div>
+        <div class="main-content" id="mainContentArea"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== API BASE ====================
+    const API_BASE = '/api';
+
+    // ==================== DATA ====================
+    let products = [];
+    let bills = [];
+    let deletedBills = [];
+    let repairs = [];
+    let staffList = [];
+    let attendanceRecords = {};
+    let reportSettings = {
+      startDate: new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
+      type: 'sales'
+    };
+    let currentUser = localStorage.getItem("currentUser") || null;
+    let currentPage = "dashboard";
+    let pieChart, barChart, reportChart;
+    let currentCart = [];
+    let staffFilter = 'all';
+
+    // ==================== API CALLS ====================
+    async function apiGet(endpoint) {
+      try {
+        const res = await fetch(`${API_BASE}${endpoint}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.error(`API GET error (${endpoint}):`, err);
+        showToast('Error loading data', 'fa-exclamation-triangle', '#ef4444');
+        return null;
+      }
+    }
+
+    async function apiPost(endpoint, data) {
+      try {
+        const res = await fetch(`${API_BASE}${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.error(`API POST error (${endpoint}):`, err);
+        showToast('Error saving data', 'fa-exclamation-triangle', '#ef4444');
+        return null;
+      }
+    }
+
+    async function apiPut(endpoint, data) {
+      try {
+        const res = await fetch(`${API_BASE}${endpoint}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.error(`API PUT error (${endpoint}):`, err);
+        showToast('Error updating data', 'fa-exclamation-triangle', '#ef4444');
+        return null;
+      }
+    }
+
+    async function apiDelete(endpoint) {
+      try {
+        const res = await fetch(`${API_BASE}${endpoint}`, {
+          method: 'DELETE'
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.error(`API DELETE error (${endpoint}):`, err);
+        showToast('Error deleting data', 'fa-exclamation-triangle', '#ef4444');
+        return null;
+      }
+    }
+
+    // ==================== LOAD DATA ====================
+    async function loadAllData() {
+      try {
+        const [productsData, billsData, repairsData, staffData, deletedBillsData] = await Promise.all([
+          apiGet('/products'),
+          apiGet('/bills'),
+          apiGet('/repairs'),
+          apiGet('/staff'),
+          apiGet('/deleted/bills')
+        ]);
+        if (productsData) products = productsData || [];
+        if (billsData) bills = billsData || [];
+        if (repairsData) repairs = repairsData || [];
+        if (staffData) staffList = staffData || [];
+        if (deletedBillsData) deletedBills = deletedBillsData || [];
+
+        const alertElem = document.getElementById('topAlertCount');
+        if (alertElem) {
+          const lowCount = lowStockAlertList().length;
+          alertElem.textContent = lowCount;
+          alertElem.style.display = lowCount > 0 ? 'flex' : 'none';
+        }
+        return true;
+      } catch (err) {
+        console.error('Error loading data:', err);
+        showToast('Error loading data', 'fa-exclamation-triangle', '#ef4444');
+        return false;
+      }
+    }
+
+    // ==================== SAVE FUNCTIONS ====================
+    function saveProducts() { /* Data is saved on server */ }
+    function saveBillingCart() { /* Cart is stored in memory */ }
+    function clearBillingCart() { currentCart = []; }
+    function saveStaffData() { /* Data is saved on server */ }
+    function saveReportSettings() { localStorage.setItem("reportSettings", JSON.stringify(reportSettings)); }
+
+    function getTodayKey() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    function getPresentCount() { return staffList.filter(s => s.attendance === 'present').length; }
+    function getAbsentCount() { return staffList.filter(s => s.attendance === 'absent').length; }
+
+    // ==================== UTILITY FUNCTIONS ====================
+    function generateRandomBarcode() {
+      const digits = "0123456789";
+      let code = "";
+      for (let i = 0; i < 12; i++) {
+        code += digits.charAt(Math.floor(Math.random() * digits.length));
+      }
+      return code;
+    }
+
+    function generateRandomBarcodeValue() {
+      const digits = "0123456789";
+      let code = "";
+      for (let i = 0; i < 12; i++) {
+        code += digits.charAt(Math.floor(Math.random() * digits.length));
+      }
+      return code;
+    }
+
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' })[m]); }
+    function lowStockAlertList() { return products.filter(p => p.stock < p.min_stock); }
+
+    function getTotalRevenue() {
+      const billRevenue = bills.reduce((sum, bill) => {
+        const grandTotal = Number(bill.grand_total ?? bill.grandTotal ?? 0);
+        return sum + (Number.isFinite(grandTotal) ? grandTotal : 0);
+      }, 0);
+      return Number.isFinite(billRevenue) ? billRevenue : 0;
+    }
+
+    function getRevenueChangePercent() {
+      const currentDate = new Date();
+      const currentMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const previousMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+      const currentMonthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+
+      const currentRevenue = bills.reduce((sum, bill) => {
+        const billDate = new Date(bill.date || bill.created_at || bill.createdAt || bill.timestamp || 0);
+        if (Number.isNaN(billDate.getTime())) return sum;
+        if (billDate >= currentMonthStart && billDate < currentMonthEnd) {
+          const grandTotal = Number(bill.grand_total ?? bill.grandTotal ?? 0);
+          return sum + (Number.isFinite(grandTotal) ? grandTotal : 0);
+        }
+        return sum;
+      }, 0);
+
+      const previousRevenue = bills.reduce((sum, bill) => {
+        const billDate = new Date(bill.date || bill.created_at || bill.createdAt || bill.timestamp || 0);
+        if (Number.isNaN(billDate.getTime())) return sum;
+        if (billDate >= previousMonthStart && billDate < currentMonthStart) {
+          const grandTotal = Number(bill.grand_total ?? bill.grandTotal ?? 0);
+          return sum + (Number.isFinite(grandTotal) ? grandTotal : 0);
+        }
+        return sum;
+      }, 0);
+
+      if (previousRevenue === 0) return currentRevenue > 0 ? 100 : 0;
+      return ((currentRevenue - previousRevenue) / previousRevenue) * 100;
+    }
+
+    function getTotalInventoryValue() { return products.reduce((s, p) => s + (p.stock * p.price), 0); }
+
+    function formatCompactCurrency(value) {
+      const num = Number(value) || 0;
+      if (num >= 10000000) return `₹${(num / 10000000).toFixed(2)} Cr`;
+      if (num >= 100000) return `₹${(num / 100000).toFixed(2)} L`;
+      if (num >= 1000) return `₹${(num / 1000).toFixed(2)} K`;
+      return `₹${num.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+    }
+
+    function generateBillNumber() {
+      let counter = parseInt(localStorage.getItem("invoiceCounter") || "1001", 10);
+      const invoiceNo = `INV-${counter.toString().padStart(5, '0')}`;
+      localStorage.setItem("invoiceCounter", (counter + 1).toString());
+      return invoiceNo;
+    }
+
+    function showToast(msg, icon = 'fa-check-circle', color = '#10b981') {
+      const existing = document.querySelector('.toast-msg');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg';
+      toast.innerHTML = `<i class="fas ${icon}" style="color:${color};"></i> ${msg}`;
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)'; setTimeout(() => toast.remove(), 300); }, 2500);
+    }
+
+    // ========== EXPORT FUNCTIONS ==========
+    function exportToCSV(data, filename, headers) {
+      if (!data || data.length === 0) {
+        showToast('No data to export', 'fa-exclamation-triangle', '#ef4444');
+        return;
+      }
+      
+      let csv = headers.join(',') + '\n';
+      data.forEach(row => {
+        const values = headers.map(h => {
+          let val = row[h] || '';
+          if (typeof val === 'string' && (val.includes(',') || val.includes('"') || val.includes('\n'))) {
+            val = `"${val.replace(/"/g, '""')}"`;
+          }
+          return val;
+        });
+        csv += values.join(',') + '\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      showToast(`Exported ${data.length} records`, 'fa-file-export', '#10b981');
+    }
+
+    // ========== DASHBOARD ==========
+    function renderDashboard() {
+      const lowItems = lowStockAlertList();
+      const totalVal = getTotalInventoryValue();
+      const revenue = getTotalRevenue();
+      const revenueChange = getRevenueChangePercent();
+      const revenueChangeText = revenueChange === 0 ? 'No change vs last month' : `${revenueChange >= 0 ? '+' : ''}${revenueChange.toFixed(1)}% from last month`;
+      const presentCount = getPresentCount();
+      const absentCount = getAbsentCount();
+      const todayBills = bills.filter(b => new Date(b.date).toDateString() === new Date().toDateString()).length;
+      
+      const dateFormatted = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      document.getElementById("mainContentArea").innerHTML = `
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle">Real-time retail analytics</p>
+          </div>
+          <div class="date-chip">
+            <i class="far fa-calendar-alt" style="color:#6d54fe; font-size:1.15rem;"></i>
+            <div>
+              <span style="font-size:0.7rem; color:#8c8fa7; display:block; font-weight:600;">Today</span>
+              <strong style="font-size:0.85rem; color:#1e1e2d;">${dateFormatted}</strong>
+            </div>
+            <i class="fas fa-chevron-down" style="font-size:0.7rem; color:#8c8fa7; margin-left:6px;"></i>
+          </div>
+        </div>
+
+        <!-- TOP STATS ROW (3 CARDS) -->
+        <div class="dash-stats-row-top">
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Total Revenue</div>
+              <div class="dash-card-value purple-num">${formatCompactCurrency(revenue)}</div>
+              <div class="dash-card-sub">${revenueChangeText}</div>
+            </div>
+            <div class="dash-icon-circle"><i class="fas fa-chart-bar"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Total Products</div>
+              <div class="dash-card-value">${products.length}</div>
+              <div class="dash-card-sub">Value: ₹${totalVal.toLocaleString()}</div>
+            </div>
+            <div class="dash-icon-circle"><i class="fas fa-cube"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Low Stock Alerts</div>
+              <div class="dash-card-value">${lowItems.length}</div>
+              <div class="dash-card-sub" style="color:${lowItems.length > 0 ? '#ef4444' : '#10b981'};">
+                <i class="fas ${lowItems.length > 0 ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> 
+                ${lowItems.length > 0 ? 'Needs attention' : 'All items in stock'}
+              </div>
+            </div>
+            <div class="dash-icon-circle"><i class="far fa-bell"></i></div>
+          </div>
+        </div>
+
+        <!-- MID STATS ROW (4 CARDS) -->
+        <div class="dash-stats-row-mid">
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Total Staff</div>
+              <div class="dash-card-value">${staffList.length}</div>
+              <div class="dash-card-sub">Active: ${staffList.filter(s => s.status === 'active').length}</div>
+            </div>
+            <div class="dash-icon-circle"><i class="fas fa-users"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Present Today</div>
+              <div class="dash-card-value">${presentCount}</div>
+              <div class="dash-card-sub" style="color:#10b981;"><i class="fas fa-check-circle"></i> ${presentCount} staff members present</div>
+            </div>
+            <div class="dash-icon-circle"><i class="fas fa-user"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Absent Today</div>
+              <div class="dash-card-value">${absentCount}</div>
+              <div class="dash-card-sub" style="color:#78829d;"><i class="fas fa-times-circle"></i> ${absentCount} staff members absent</div>
+            </div>
+            <div class="dash-icon-circle pink-circle"><i class="fas fa-user-times"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Total Bills</div>
+              <div class="dash-card-value">${bills.length}</div>
+              <div class="dash-card-sub">Today: ${todayBills}</div>
+            </div>
+            <div class="dash-icon-circle"><i class="fas fa-receipt"></i></div>
+          </div>
+        </div>
+
+        <!-- CHARTS ROW -->
+        <div class="dash-charts-row">
+          <div class="dash-chart-card">
+            <div class="chart-card-header">
+              <div class="chart-card-title"><i class="far fa-clock" style="color:#6d54fe;"></i> Stock Distribution</div>
+            </div>
+            <div class="chart-legend-row" id="pieLegendRow"></div>
+            <div style="height:250px; position:relative; display:flex; justify-content:center; align-items:center;">
+              <canvas id="pieChart"></canvas>
+            </div>
+          </div>
+          <div class="dash-chart-card">
+            <div class="chart-card-header">
+              <div class="chart-card-title"><i class="fas fa-chart-bar" style="color:#6d54fe;"></i> Sales Overview</div>
+              <select class="chart-select-pill" id="barChartFilter">
+                <option value="stock">Current Stock</option>
+                <option value="sales">Product Sales</option>
+              </select>
+            </div>
+            <div style="height:270px; position:relative;">
+              <canvas id="barChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALERT BANNER -->
+        <div class="dash-alert-banner" onclick="switchPage('lowstock')">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div class="banner-icon-badge">!</div>
+            <div>
+              <strong style="color:#1e1e2d; font-size:0.95rem;">Low Stock Items</strong>
+              <p style="font-size:0.84rem; color:#78829d; margin-top:3px;">
+                ${lowItems.length === 0 ? 'All products have healthy stock levels.' : lowItems.map(p => `${escapeHtml(p.name)} | Stock: ${p.stock} | Min: ${p.min_stock}`).join(' &nbsp;•&nbsp; ')}
+              </p>
+            </div>
+          </div>
+          <div class="banner-arrow-btn"><i class="fas fa-chevron-right"></i></div>
+        </div>
+      `;
+
+      // Update top bar alert count
+      const alertElem = document.getElementById('topAlertCount');
+      if (alertElem) alertElem.textContent = lowItems.length || 0;
+
+      // Render Charts
+      renderDashboardCharts(products);
+    }
+
+    function renderDashboardCharts(prodList) {
+      const ctxPie = document.getElementById('pieChart')?.getContext('2d');
+      const ctxBar = document.getElementById('barChart')?.getContext('2d');
+      const piePalette = ['#1e0a4f', '#6d54fe', '#b2a8f8', '#d4b2ff', '#ef5da8', '#38bdf8', '#818cf8'];
+
+      if (ctxPie && prodList.length > 0) {
+        if (pieChart) pieChart.destroy();
+        const topProds = prodList.slice(0, 5);
+        
+        // Custom legend badges
+        const legendContainer = document.getElementById('pieLegendRow');
+        if (legendContainer) {
+          legendContainer.innerHTML = topProds.map((p, idx) => `
+            <div class="chart-legend-item">
+              <span class="chart-legend-dot" style="background:${piePalette[idx % piePalette.length]};"></span>
+              <span>${escapeHtml(p.name)}</span>
+            </div>
+          `).join('');
+        }
+
+        pieChart = new Chart(ctxPie, {
+          type: 'doughnut',
+          data: {
+            labels: topProds.map(p => p.name),
+            datasets: [{
+              data: topProds.map(p => p.stock || 1),
+              backgroundColor: piePalette.slice(0, topProds.length),
+              borderWidth: 3,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            cutout: '50%'
+          }
+        });
+      }
+
+      if (ctxBar && prodList.length > 0) {
+        if (barChart) barChart.destroy();
+        const topProds = prodList.slice(0, 6);
+
+        // Gradient for bars
+        const gradient = ctxBar.createLinearGradient(0, 0, 0, 240);
+        gradient.addColorStop(0, '#6d54fe');
+        gradient.addColorStop(1, '#9b8afc');
+
+        barChart = new Chart(ctxBar, {
+          type: 'bar',
+          data: {
+            labels: topProds.map(p => p.name),
+            datasets: [{
+              label: 'Stock Quantity',
+              data: topProds.map(p => p.stock || 0),
+              backgroundColor: gradient,
+              borderRadius: 12,
+              barThickness: 38
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { color: '#78829d', font: { size: 11 } }
+              },
+              y: {
+                grid: { color: '#f2f3f9' },
+                ticks: { color: '#78829d', font: { size: 11 } },
+                suggestedMax: 100
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // ========== PRODUCTS ==========
+    function renderProducts() { 
+      document.getElementById("mainContentArea").innerHTML = `
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title"><i class="fas fa-boxes" style="color:var(--primary); font-size:1.5rem;"></i> Products Catalog</h1>
+            <p class="page-subtitle">Manage device catalog, prices, SKU tracking, and real-time inventory</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-primary" id="addProductBtn"><i class="fas fa-plus"></i> Add Product</button>
+            <button class="btn-secondary" onclick="exportProducts()"><i class="fas fa-file-export"></i> Export CSV</button>
+          </div>
+        </div>
+        <div class="page-card-container">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:18px;">
+            <div class="search-bar-custom" style="margin-bottom:0; flex:1; max-width:420px;">
+              <i class="fas fa-search"></i>
+              <input type="text" id="productSearch" placeholder="Search by name, SKU, or batch...">
+            </div>
+            <div id="productCountBadge" class="count-badge">${products.length} Products</div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th style="width:70px;">Image</th>
+                  <th>Product / Details</th>
+                  <th>SKU</th>
+                  <th>Price</th>
+                  <th>Stock Status</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productsList"></tbody>
+            </table>
+          </div>
+        </div>
+      `; 
+      loadProducts(); 
+      document.getElementById("productSearch")?.addEventListener("input", loadProducts); 
+      document.getElementById("addProductBtn")?.addEventListener("click", openAddProductModal); 
+    }
+
+    function loadProducts() {
+      const search = document.getElementById("productSearch")?.value?.toLowerCase().trim() || '';
+      const filtered = products.filter(p => 
+        p.name.toLowerCase().includes(search) || 
+        (p.sku && p.sku.toLowerCase().includes(search)) ||
+        (p.batch_number && p.batch_number.toLowerCase().includes(search)) ||
+        (p.category && p.category.toLowerCase().includes(search))
+      );
+      
+      const badgeElem = document.getElementById("productCountBadge");
+      if (badgeElem) badgeElem.textContent = `${filtered.length} of ${products.length} Products`;
+
+      const tbody = document.getElementById("productsList");
+      if (!tbody) return;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state-card">
+                <i class="fas fa-box-open"></i>
+                <h3>No Products Found</h3>
+                <p>Try searching with another keyword or click "Add Product" to create one.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => {
+        let stockBadge = '';
+        if (p.stock === 0) {
+          stockBadge = '<span class="stock-badge out"><i class="fas fa-times-circle"></i> Out of Stock</span>';
+        } else if (p.stock <= (p.min_stock || 5)) {
+          stockBadge = `<span class="stock-badge low"><i class="fas fa-exclamation-triangle"></i> Low (${p.stock})</span>`;
+        } else {
+          stockBadge = `<span class="status-badge status-active"><i class="fas fa-check-circle"></i> In Stock (${p.stock})</span>`;
+        }
+
+        return `
+          <tr>
+            <td><img src="${p.photo_data || 'https://placehold.co/400x400/e2e8f0?text=No+Image'}" class="product-img-thumb" onerror="this.src='https://placehold.co/400x400/e2e8f0?text=No+Image'"></td>
+            <td>
+              <div style="font-weight:700; color:#1e1e2d; font-size:0.95rem;">${escapeHtml(p.name)}</div>
+              <div style="font-size:0.75rem; color:#78829d; margin-top:2px;">
+                <span style="color:#6d54fe; font-weight:600;">${p.category || 'General'}</span> &bull; Batch: ${p.batch_number || 'N/A'}
+              </div>
+            </td>
+            <td><span class="sku-pill">${escapeHtml(p.sku || 'N/A')}</span></td>
+            <td><strong style="font-size:0.95rem; color:#1e1e2d;">₹${Number(p.price || 0).toLocaleString()}</strong></td>
+            <td>${stockBadge}</td>
+            <td>
+              <div class="action-cell" style="justify-content:flex-end;">
+                <button class="btn-edit-sm" title="Edit Product" onclick="editProduct(${p.id})"><i class="fas fa-pencil-alt"></i></button>
+                <button class="btn-delete-sm" title="Delete Product" onclick="deleteProduct(${p.id})"><i class="fas fa-trash-alt"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportProducts() {
+      const headers = ['id', 'name', 'sku', 'category', 'brand', 'stock', 'min_stock', 'price', 'cost_price', 'sold_count', 'supplier', 'batch_number'];
+      exportToCSV(products, 'products', headers);
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      const result = await apiDelete(`/products/${id}`);
+      if (result && result.success) {
+        await loadAllData();
+        loadProducts();
+        showToast('Product deleted', 'fa-trash-alt', '#ef4444');
+      }
+    }
+
+    // ========== ADD PRODUCT MODAL ==========
+    function openAddProductModal() {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-card">
+          <h2>Add New Product</h2>
+          <div class="form-group"><label>Product Name *</label><input id="pName" placeholder="Enter product name"></div>
+          <div class="form-group"><label>SKU (unique)</label><input id="pSku" placeholder="e.g., PROD-001"></div>
+          <div class="form-group"><label>Selling Price (₹)</label><input id="pPrice" type="number" value="19999"></div>
+          <div class="form-group"><label>Initial Stock</label><input id="pStock" type="number" value="15"></div>
+          <div class="form-group"><label>Min Stock Alert</label><input id="pMin" type="number" value="5"></div>
+          <div class="form-group"><label>Product Image</label>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <input type="file" id="pImg" accept="image/*" style="flex:1; padding:10px; border:2px solid #e2e8f0; border-radius:28px;">
+              <button id="clearImageBtn" class="btn-secondary" style="padding:8px 16px; font-size:0.8rem;">Clear</button>
+            </div>
+            <div id="imagePreviewContainer" style="margin-top:12px; display:none;">
+              <img id="previewImg" class="img-preview" style="width:120px; height:120px; object-fit:cover; border-radius:16px; border:2px solid #e2e8f0;">
+              <p style="font-size:0.8rem; color:#64748b; margin-top:4px;">Selected image</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; margin-top:20px;">
+            <button id="cancelModal" class="btn-secondary">Cancel</button>
+            <button id="saveProductModal" class="btn-primary">Save Product</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      let selectedImageData = null;
+      const fileInput = modal.querySelector("#pImg");
+      const previewContainer = modal.querySelector("#imagePreviewContainer");
+      const previewImg = modal.querySelector("#previewImg");
+      
+      fileInput.onchange = function(e) {
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
+          if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB');
+            this.value = '';
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = function(ev) {
+            selectedImageData = ev.target.result;
+            previewImg.src = ev.target.result;
+            previewContainer.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      
+      modal.querySelector("#clearImageBtn").onclick = function() {
+        fileInput.value = '';
+        selectedImageData = null;
+        previewContainer.style.display = 'none';
+        previewImg.src = '';
+      };
+      
+      modal.querySelector("#cancelModal").onclick = () => modal.remove();
+      
+      modal.querySelector("#saveProductModal").onclick = async () => {
+        const name = modal.querySelector("#pName").value.trim();
+        const sku = modal.querySelector("#pSku").value.trim() || name.toUpperCase().slice(0, 6) + Date.now().toString().slice(-4);
+        if (!name) { alert("Enter product name"); return; }
+        const photoData = selectedImageData || 'https://placehold.co/400x400/e2e8f0?text=No+Image';
+        const data = {
+          name, sku,
+          price: parseFloat(modal.querySelector("#pPrice").value) || 0,
+          stock: parseInt(modal.querySelector("#pStock").value) || 0,
+          minStock: parseInt(modal.querySelector("#pMin").value) || 5,
+          photoData: photoData,
+          batchNumber: generateRandomBarcode(),
+          category: 'General',
+          brand: 'Other'
+        };
+        const result = await apiPost('/products', data);
+        if (result && result.success) {
+          await loadAllData();
+          modal.remove();
+          renderProducts();
+          showToast(`✅ "${name}" added successfully!`, 'fa-check-circle', '#10b981');
+        }
+      };
+    }
+
+    // ========== EDIT PRODUCT ==========
+    async function editProduct(id) {
+      const product = products.find(p => p.id === id);
+      if (!product) return;
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-card">
+          <h2>Edit Product</h2>
+          <div class="form-group"><label>Product Name</label><input id="eName" value="${escapeHtml(product.name)}"></div>
+          <div class="form-group"><label>SKU</label><input id="eSku" value="${escapeHtml(product.sku)}"></div>
+          <div class="form-group"><label>Selling Price (₹)</label><input id="ePrice" type="number" value="${product.price}"></div>
+          <div class="form-group"><label>Stock</label><input id="eStock" type="number" value="${product.stock}"></div>
+          <div class="form-group"><label>Min Stock</label><input id="eMin" type="number" value="${product.min_stock}"></div>
+          <div class="form-group"><label>Product Image</label>
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+              <input type="file" id="eImg" accept="image/*" style="flex:1; padding:10px; border:2px solid #e2e8f0; border-radius:28px;">
+              <button id="clearEditImageBtn" class="btn-secondary" style="padding:8px 16px; font-size:0.8rem;">Clear</button>
+            </div>
+            <div id="editImagePreviewContainer" style="margin-top:12px;">
+              <img id="editPreviewImg" class="img-preview" src="${product.photo_data || 'https://placehold.co/400x400/e2e8f0?text=No+Image'}" style="width:120px; height:120px; object-fit:cover; border-radius:16px; border:2px solid #e2e8f0;">
+              <p style="font-size:0.8rem; color:#64748b; margin-top:4px;">Current image</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:12px; margin-top:20px;">
+            <button id="cancelEditModal" class="btn-secondary">Cancel</button>
+            <button id="saveEditModal" class="btn-primary">Update Product</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      let selectedImageData = null;
+      const fileInput = modal.querySelector("#eImg");
+      const previewImg = modal.querySelector("#editPreviewImg");
+      
+      fileInput.onchange = function(e) {
+        if (this.files && this.files[0]) {
+          const file = this.files[0];
+          if (file.size > 5 * 1024 * 1024) {
+            alert('Image size should be less than 5MB');
+            this.value = '';
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = function(ev) {
+            selectedImageData = ev.target.result;
+            previewImg.src = ev.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      
+      modal.querySelector("#clearEditImageBtn").onclick = function() {
+        fileInput.value = '';
+        selectedImageData = null;
+        previewImg.src = 'https://placehold.co/400x400/e2e8f0?text=No+Image';
+      };
+      
+      modal.querySelector("#cancelEditModal").onclick = () => modal.remove();
+      
+      modal.querySelector("#saveEditModal").onclick = async () => {
+        const data = {
+          name: modal.querySelector("#eName").value.trim(),
+          sku: modal.querySelector("#eSku").value.trim(),
+          price: parseFloat(modal.querySelector("#ePrice").value) || 0,
+          stock: parseInt(modal.querySelector("#eStock").value) || 0,
+          minStock: parseInt(modal.querySelector("#eMin").value) || 5,
+          photoData: selectedImageData || product.photo_data || 'https://placehold.co/400x400/e2e8f0?text=No+Image'
+        };
+        const result = await apiPut(`/products/${id}`, data);
+        if (result && result.success) {
+          await loadAllData();
+          modal.remove();
+          renderProducts();
+          showToast('Product updated successfully!', 'fa-save', '#10b981');
+        }
+      };
+    }
+
+    // ========== STOCK MANAGEMENT ==========
+    function renderStockManagement() {
+      const totalUnits = products.reduce((acc, p) => acc + (p.stock || 0), 0);
+      const lowItems = lowStockAlertList();
+      const outOfStock = products.filter(p => p.stock === 0).length;
+      const healthyStock = products.filter(p => p.stock > (p.min_stock || 5)).length;
+
+      document.getElementById("mainContentArea").innerHTML = `
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title"><i class="fas fa-clipboard-list" style="color:var(--primary); font-size:1.5rem;"></i> Stock & Inventory</h1>
+            <p class="page-subtitle">Real-time stock levels, quantity thresholds, and barcode label printing</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-primary" onclick="setActiveNav('products')"><i class="fas fa-plus"></i> Add Product</button>
+          </div>
+        </div>
+
+        <div class="dash-stats-row-mid" style="margin-bottom:22px;">
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Total Units in Stock</div>
+              <div class="dash-card-value purple-num">${totalUnits}</div>
+              <div class="dash-card-sub">${products.length} catalog items</div>
+            </div>
+            <div class="dash-icon-circle"><i class="fas fa-boxes"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Adequate Stock</div>
+              <div class="dash-card-value" style="color:#10b981;">${healthyStock}</div>
+              <div class="dash-card-sub" style="color:#10b981;"><i class="fas fa-check-circle"></i> Sufficient level</div>
+            </div>
+            <div class="dash-icon-circle" style="background:#ecfdf5; color:#10b981;"><i class="fas fa-check"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Low Stock</div>
+              <div class="dash-card-value" style="color:#f59e0b;">${lowItems.length}</div>
+              <div class="dash-card-sub" style="color:#f59e0b;"><i class="fas fa-exclamation-triangle"></i> Near reorder point</div>
+            </div>
+            <div class="dash-icon-circle" style="background:#fffbeb; color:#f59e0b;"><i class="fas fa-exclamation"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Out of Stock</div>
+              <div class="dash-card-value" style="color:#ef4444;">${outOfStock}</div>
+              <div class="dash-card-sub" style="color:#ef4444;"><i class="fas fa-times-circle"></i> Reorder required</div>
+            </div>
+            <div class="dash-icon-circle" style="background:#fef2f2; color:#ef4444;"><i class="fas fa-ban"></i></div>
+          </div>
+        </div>
+
+        <div class="search-bar-custom">
+          <i class="fas fa-search"></i>
+          <input type="text" id="stockSearch" placeholder="Search stock by product name, SKU, or batch...">
+        </div>
+        <div id="stockGridContainer" class="stock-grid"></div>
+      `;
+      loadStockGrid();
+      document.getElementById("stockSearch")?.addEventListener("input", loadStockGrid);
+    }
+
+    function loadStockGrid() {
+      const search = document.getElementById("stockSearch")?.value?.toLowerCase().trim() || '';
+      const filtered = products.filter(p => 
+        p.name.toLowerCase().includes(search) ||
+        (p.sku && p.sku.toLowerCase().includes(search)) ||
+        (p.batch_number && p.batch_number.toLowerCase().includes(search))
+      );
+      const container = document.getElementById("stockGridContainer");
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column:1/-1;">
+            <div class="empty-state-card" style="background:white; border-radius:24px; border:1px solid #edeef6;">
+              <i class="fas fa-boxes"></i>
+              <h3>No Stock Items Found</h3>
+              <p>No products match your search criteria.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = filtered.map(p => {
+        let levelClass = 'high';
+        if (p.stock === 0 || p.stock < p.min_stock) levelClass = 'low';
+        else if (p.stock < p.min_stock * 2) levelClass = 'medium';
+        return `
+          <div class="stock-card-round" data-id="${p.id}">
+            <img src="${p.photo_data || 'https://placehold.co/400x400/e2e8f0?text=No+Image'}" class="product-img-round" onerror="this.src='https://placehold.co/400x400/e2e8f0?text=No+Image'">
+            <div class="product-name-round">${escapeHtml(p.name)}</div>
+            <div class="batch-code-round"><i class="fas fa-barcode"></i> ${p.batch_number || p.sku || 'N/A'}</div>
+            <div class="stock-indicator">
+              <div class="stock-circle ${levelClass}">${p.stock}</div>
+              <div style="text-align:left; font-size:0.8rem; line-height:1.4;">
+                <div style="font-weight:700; color:#1e1e2d;">${p.stock} units</div>
+                <div class="min-stock-label">Min Threshold: ${p.min_stock || 5}</div>
+              </div>
+            </div>
+            <div class="action-row">
+              <button onclick="openBarcodeModal(${p.id})"><i class="fas fa-barcode"></i> Barcode</button>
+              <button class="edit-stock-btn" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i> Edit</button>
+            </div>
+            <div id="barcodeArea${p.id}" style="margin-top:8px; min-height:10px;"></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function openBarcodeModal(id) {
+      const prod = products.find(p => p.id === id);
+      if (!prod) return;
+      let barcodeValue = prod.batch_number || prod.sku || '';
+      if (!barcodeValue) {
+        barcodeValue = generateRandomBarcode();
+        const updatePayload = {
+          name: prod.name,
+          sku: prod.sku,
+          category: prod.category || '',
+          brand: prod.brand || '',
+          stock: prod.stock || 0,
+          minStock: prod.min_stock || 5,
+          price: prod.price || 0,
+          costPrice: prod.cost_price || 0,
+          supplier: prod.supplier || '',
+          batchNumber: barcodeValue,
+          photoData: prod.photo_data || ''
+        };
+        const result = await apiPut(`/products/${id}`, updatePayload);
+        if (result && result.success) {
+          await loadAllData();
+        }
+      }
+      const product = products.find(p => p.id === id) || prod;
+
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-card barcode-modal">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+            <div>
+              <h2>Barcode Labels</h2>
+              <p style="color:#475569; margin-top:8px;">${escapeHtml(product.name)} &nbsp;|&nbsp; SKU: ${escapeHtml(product.sku || 'N/A')}</p>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button id="downloadBarcodeBtn" class="btn-secondary"><i class="fas fa-download"></i> Download PDF</button>
+              <button id="printBarcodeBtn" class="btn-primary"><i class="fas fa-print"></i> Print Labels</button>
+              <button id="closeBarcodeModal" class="btn-secondary">Close</button>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+            <label style="font-weight:700; color:#0f172a;">Labels:</label>
+            <input id="barcodeLabelCount" type="number" value="12" min="1" max="48" style="width:90px; padding:10px 12px; border:1px solid #cbd5e1; border-radius:16px;">
+            <span style="color:#64748b; font-size:0.95rem;">Print up to 48 labels per sheet.</span>
+          </div>
+          <div id="barcodePrintArea" class="barcode-print-area"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const printArea = modal.querySelector('#barcodePrintArea');
+      const countInput = modal.querySelector('#barcodeLabelCount');
+
+      function renderBarcodeLabels(count) {
+        const labels = Array.from({ length: count }, (_, idx) => {
+          const codeValue = generateRandomBarcodeValue();
+          return `
+            <div class="barcode-label" data-label-index="${idx}">
+              <div class="barcode-label-title">${escapeHtml(product.name)}</div>
+              <svg class="barcode-svg" id="barcodeSvg${id}_${idx}"></svg>
+              <div class="barcode-label-text">${escapeHtml(codeValue)}</div>
+            </div>
+          `;
+        }).join('');
+        printArea.innerHTML = labels;
+        printArea.querySelectorAll('.barcode-svg').forEach((svg, idx) => {
+          const codeValue = printArea.querySelectorAll('.barcode-label-text')[idx].textContent || '';
+          JsBarcode(svg, codeValue, {
+            format: 'CODE39',
+            width: 1.4,
+            height: 60,
+            displayValue: true,
+            fontSize: 10,
+            margin: 0
+          });
+        });
+      }
+
+      function clampLabelCount(value) {
+        const n = parseInt(value, 10) || 1;
+        return Math.min(Math.max(n, 1), 48);
+      }
+
+      renderBarcodeLabels(clampLabelCount(countInput.value));
+      countInput.addEventListener('input', () => {
+        countInput.value = clampLabelCount(countInput.value);
+        renderBarcodeLabels(clampLabelCount(countInput.value));
+      });
+
+      modal.querySelector('#downloadBarcodeBtn').onclick = () => downloadBarcodePdf(printArea, `barcode-${product.sku || product.id}`);
+      modal.querySelector('#printBarcodeBtn').onclick = () => printBarcodeArea(printArea, `Barcode-${product.sku || product.id}`);
+      modal.querySelector('#closeBarcodeModal').onclick = () => modal.remove();
+    }
+
+    function downloadBarcodePdf(container, filename) {
+      const options = {
+        margin: 0.2,
+        filename: `${filename}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(options).from(container).save();
+    }
+
+    function printBarcodeArea(container, title) {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) return;
+      const styles = `
+        body { margin: 0; padding: 18px; font-family: 'Inter', sans-serif; background: white; }
+        .barcode-print-area { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+        .barcode-label { border: 1px solid #e2e8f0; border-radius: 16px; padding: 12px; min-height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .barcode-label-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; text-align: center; }
+        .barcode-svg { width: 100%; height: 72px; }
+        .barcode-label-text { font-size: 0.82rem; color: #334155; text-align: center; word-break: break-word; }
+        @media print {
+          body { margin: 0; }
+          .barcode-print-area { gap: 10px; }
+          .barcode-label { page-break-inside: avoid; }
+        }
+      `;
+      printWindow.document.write(`<!doctype html><html><head><title>${title}</title><style>${styles}</style></head><body><div class="barcode-print-area">${container.innerHTML}</div></body></html>`);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 600);
+    }
+
+    // ========== BILLING ==========
+    function renderBilling() {
+      const container = document.getElementById("mainContentArea");
+      container.innerHTML = `
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title"><i class="fas fa-receipt" style="color:var(--primary); font-size:1.5rem;"></i> Smart Billing & POS</h1>
+            <p class="page-subtitle">Instant invoice creation with real-time tax calculations, discounts, and print</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-secondary" onclick="setActiveNav('history')"><i class="fas fa-history"></i> Bill History</button>
+          </div>
+        </div>
+        <div class="billing-container">
+          <div class="customer-section">
+            <h4 style="font-size:0.92rem; font-weight:700; margin-bottom:12px; color:#1e1e2d; display:flex; align-items:center; gap:8px;">
+              <i class="fas fa-user-circle" style="color:var(--primary); font-size:1.1rem;"></i> Customer Details
+            </h4>
+            <div class="customer-grid">
+              <input type="text" id="custName" placeholder="Customer Name *" required>
+              <input type="tel" id="custPhone" placeholder="Mobile Number *" required>
+            </div>
+          </div>
+          <div style="background:#fafaff; border-radius:20px; padding:20px 22px; border:1px solid #edeef6; margin-bottom:20px;">
+            <h4 style="font-size:0.92rem; font-weight:700; margin-bottom:12px; color:#1e1e2d; display:flex; align-items:center; gap:8px;">
+              <i class="fas fa-cart-plus" style="color:var(--primary); font-size:1.1rem;"></i> Add Item to Invoice
+            </h4>
+            <div class="add-item-row" style="margin-bottom:8px;">
+              <select id="productSelect"></select>
+              <input type="number" id="itemQty" value="1" min="1" placeholder="Qty">
+              <button id="addToCartBtn" class="btn-primary"><i class="fas fa-plus"></i> Add Item</button>
+            </div>
+            <div id="selectedStockInfo" class="stock-info-pill" style="margin-bottom:0; margin-top:8px;">
+              <i class="fas fa-info-circle"></i> <span>Select a product to see stock details</span>
+            </div>
+          </div>
+          
+          <div style="overflow-x:auto;">
+            <table class="cart-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Price (₹)</th>
+                  <th>Quantity</th>
+                  <th>GST (%)</th>
+                  <th>Discount (%)</th>
+                  <th>Total (₹)</th>
+                  <th style="text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="cartItemsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="bill-summary"><div id="summaryDetails"></div></div>
+          <div class="bill-actions">
+            <button id="clearCartBtn" class="btn-secondary"><i class="fas fa-trash-alt"></i> Clear Cart</button>
+            <button id="generateBillBtn" class="btn-primary"><i class="fas fa-file-invoice"></i> Generate & Print Bill</button>
+          </div>
+        </div>
+      `;
+      const select = document.getElementById("productSelect");
+      select.innerHTML = products.map(p => `<option value="${p.id}">${p.name} (₹${p.price})</option>`).join('');
+      const stockInfo = document.getElementById('selectedStockInfo');
+      select.addEventListener('change', () => {
+        const selected = products.find(p => p.id === parseInt(select.value));
+        if (stockInfo) {
+          stockInfo.innerHTML = selected 
+            ? `<i class="fas fa-cube"></i> Available stock: <strong>${selected.stock} units</strong> (Min alert: ${selected.min_stock || 5})` 
+            : `<i class="fas fa-info-circle"></i> Select a product`;
+        }
+      });
+      if (products.length > 0) {
+        select.dispatchEvent(new Event('change'));
+      }
+      updateCartUI();
+      document.getElementById("addToCartBtn").onclick = addToCart;
+      document.getElementById("clearCartBtn").onclick = clearCart;
+      document.getElementById("generateBillBtn").onclick = generateBill;
+    }
+
+    function updateCartUI() {
+      const tbody = document.getElementById("cartItemsBody");
+      if (!tbody) return;
+
+      if (currentCart.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align:center; padding:36px 16px; color:#8c8fa7;">
+              <i class="fas fa-shopping-cart" style="font-size:2rem; color:#dcd7fe; margin-bottom:8px; display:block;"></i>
+              <strong style="color:#1e1e2d;">Your invoice cart is currently empty</strong>
+              <p style="font-size:0.85rem; margin-top:4px;">Select items and quantity above to build a bill</p>
+            </td>
+          </tr>
+        `;
+        updateSummary();
+        return;
+      }
+
+      tbody.innerHTML = currentCart.map((item, idx) => {
+        const itemTotal = item.price * item.qty;
+        const gstAmt = itemTotal * (item.gstRate || 0) / 100;
+        const discAmt = itemTotal * (item.discount || 0) / 100;
+        const finalTotal = itemTotal + gstAmt - discAmt;
+        return `
+          <tr>
+            <td><strong>${escapeHtml(item.name)}</strong></td>
+            <td><input type="number" class="price-input" data-idx="${idx}" value="${item.price}" min="0" step="1"></td>
+            <td><input type="number" class="qty-update" data-idx="${idx}" value="${item.qty}" min="1"></td>
+            <td><input type="number" class="gst-input" data-idx="${idx}" value="${item.gstRate || 0}" min="0" step="0.5"></td>
+            <td><input type="number" class="discount-input" data-idx="${idx}" value="${item.discount || 0}" min="0" max="100" step="0.5"></td>
+            <td class="total-cell">₹${finalTotal.toFixed(2)}</td>
+            <td style="text-align:center;">
+              <button class="btn-delete-sm" data-idx="${idx}" title="Remove item"><i class="fas fa-trash-alt"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      document.querySelectorAll(".price-input, .qty-update, .gst-input, .discount-input").forEach(inp => {
+        inp.addEventListener("input", function() {
+          const idx = parseInt(this.dataset.idx);
+          const cls = this.className;
+          let value = parseFloat(this.value) || 0;
+          if (cls.includes('price-input') && value >= 0) {
+            currentCart[idx].price = value;
+          } else if (cls.includes('qty-update') && value > 0) {
+            const maxStock = products.find(p => p.id === currentCart[idx].id)?.stock || 0;
+            currentCart[idx].qty = Math.min(value, maxStock);
+          } else if (cls.includes('gst-input') && value >= 0) {
+            currentCart[idx].gstRate = value;
+          } else if (cls.includes('discount-input') && value >= 0 && value <= 100) {
+            currentCart[idx].discount = value;
+          }
+          updateCartUI();
+          updateSummary();
+        });
+      });
+
+      document.querySelectorAll(".remove-item, .cart-table .btn-delete-sm").forEach(icon => {
+        icon.addEventListener("click", function() {
+          const btn = this.closest('[data-idx]');
+          const idx = parseInt(btn?.dataset.idx ?? this.dataset.idx);
+          if (!isNaN(idx)) {
+            currentCart.splice(idx, 1);
+            updateCartUI();
+            updateSummary();
+          }
+        });
+      });
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const summary = document.getElementById("summaryDetails");
+      if (!summary) return;
+      let subtotal = currentCart.reduce((s, i) => s + (i.price * i.qty), 0);
+      let gstTotal = currentCart.reduce((s, i) => s + (i.price * i.qty * (i.gstRate || 0) / 100), 0);
+      let discountTotal = currentCart.reduce((s, i) => s + (i.price * i.qty * (i.discount || 0) / 100), 0);
+      let grand = subtotal + gstTotal - discountTotal;
+      if (grand < 0) grand = 0;
+      summary.innerHTML = `
+        <div class="summary-row"><span>Items in Cart</span><span>${currentCart.reduce((s, i) => s + i.qty, 0)}</span></div>
+        <div class="summary-row"><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
+        <div class="summary-row"><span>GST Total</span><span>₹${gstTotal.toFixed(2)}</span></div>
+        <div class="summary-row discount-label"><span>Discount Total</span><span>-₹${discountTotal.toFixed(2)}</span></div>
+        <div class="summary-row total"><span>Grand Total</span><span>₹${grand.toFixed(2)}</span></div>
+      `;
+    }
+
+    function addToCart() {
+      const select = document.getElementById("productSelect");
+      const pid = parseInt(select.value);
+      const prod = products.find(p => p.id === pid);
+      const qty = parseInt(document.getElementById("itemQty").value) || 1;
+      if (!prod) { showToast('Select a valid product', 'fa-exclamation-triangle', '#ef4444'); return; }
+      if (qty <= 0) { showToast('Quantity must be at least 1', 'fa-exclamation-triangle', '#ef4444'); return; }
+      if (qty > prod.stock) { showToast(`Only ${prod.stock} units available`, 'fa-exclamation-triangle', '#ef4444'); return; }
+      let existing = currentCart.find(i => i.id === pid);
+      if (existing) {
+        existing.qty = Math.min(existing.qty + qty, prod.stock);
+      } else {
+        currentCart.push({ id: prod.id, name: prod.name, price: prod.price, qty, gstRate: 0, discount: 0 });
+      }
+      updateCartUI();
+      updateSummary();
+      showToast(`Added ${qty} x ${prod.name}`, 'fa-cart-plus', '#3b82f6');
+    }
+
+    function clearCart() {
+      if (currentCart.length === 0) { showToast('Cart is empty', 'fa-info-circle', '#64748b'); return; }
+      currentCart = [];
+      updateCartUI();
+      updateSummary();
+      showToast('Cart cleared', 'fa-trash-alt', '#0f172a');
+    }
+
+    async function generateBill() {
+      const customerName = document.getElementById("custName").value.trim();
+      const customerPhone = document.getElementById("custPhone").value.trim();
+      if (!customerName) { showToast('Customer name required', 'fa-user-times', '#ef4444'); return; }
+      if (!/^[0-9]{10}$/.test(customerPhone)) { showToast('Valid 10-digit phone required', 'fa-phone-alt', '#ef4444'); return; }
+      if (currentCart.length === 0) { showToast('Add items to cart', 'fa-shopping-cart', '#f59e0b'); return; }
+
+      let subtotal = currentCart.reduce((s, i) => s + (i.price * i.qty), 0);
+      let gstTotal = currentCart.reduce((s, i) => s + (i.price * i.qty * (i.gstRate || 0) / 100), 0);
+      let discountTotal = currentCart.reduce((s, i) => s + (i.price * i.qty * (i.discount || 0) / 100), 0);
+      let grandTotal = subtotal + gstTotal - discountTotal;
+      if (grandTotal < 0) grandTotal = 0;
+
+      const billData = {
+        billNo: generateBillNumber(),
+        customerName,
+        customerPhone,
+        items: currentCart.map(i => ({
+          productName: i.name,
+          quantity: i.qty,
+          price: i.price,
+          gstRate: i.gstRate || 0,
+          discountRate: i.discount || 0
+        })),
+        subtotal,
+        gstTotal,
+        discountTotal,
+        grandTotal,
+        date: new Date().toISOString().split('T')[0]
+      };
+
+      const result = await apiPost('/bills', billData);
+      if (result && result.success) {
+        await loadAllData();
+        currentCart = [];
+        updateCartUI();
+        updateSummary();
+        showToast('Bill generated successfully!', 'fa-receipt', '#10b981');
+        const bill = result.bill;
+        showInvoicePopup({
+          billNo: bill.bill_no,
+          customer: { name: bill.customer_name, phone: bill.customer_phone },
+          items: billData.items,
+          subtotal: bill.subtotal,
+          gstTotal: bill.gst_total,
+          discountTotal: bill.discount_total,
+          grand: bill.grand_total,
+          date: bill.date
+        });
+      }
+    }
+
+    // ========== INVOICE POPUP ==========
+    function showInvoicePopup(billData) {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="invoice-popup invoice-print-area" id="printInvoiceArea">
+          <div style="text-align:center;">
+            <img src="/images/logo.png" alt="Veronic Logo" style="max-height:42px; object-fit:contain; margin-bottom:4px;">
+            <h2 style="font-size:1.4rem;">MobileHub Pro</h2>
+            <p style="font-size:0.9rem; color:#475569;">📱 Retail & Management Suite</p>
+            <p style="margin-top:6px;"><strong>Invoice #${billData.billNo}</strong></p>
+            <p style="font-size:0.8rem; color:#64748b;">${billData.date || new Date().toLocaleString()}</p>
+          </div>
+          <div style="margin:12px 0;">
+            <h4>👤 Customer: ${billData.customer.name}</h4>
+            <p>📞 Phone: ${billData.customer.phone}</p>
+          </div>
+          <table>
+            <thead><th>Item</th><th>Qty</th><th>Price</th><th>GST%</th><th>Disc%</th><th>Total</th></thead>
+            <tbody>${billData.items.map(i => {
+              const itemTotal = i.price * i.qty;
+              const gstAmt = itemTotal * (i.gstRate || 0) / 100;
+              const discAmt = itemTotal * (i.discountRate || 0) / 100;
+              const finalTotal = itemTotal + gstAmt - discAmt;
+              return `<tr><td>${i.productName || i.name}</td><td>${i.qty}</td><td>₹${i.price.toFixed(2)}</td><td>${i.gstRate || 0}%</td><td>${(i.discountRate || 0).toFixed(1)}%</td><td>₹${finalTotal.toFixed(2)}</td></tr>`;
+            }).join('')}</tbody>
+          </table>
+          <div style="display:flex; justify-content:space-between; font-weight:600; padding:8px 0; border-top:2px solid #0f172a;">
+            <span>Subtotal</span><span>₹${billData.subtotal.toFixed(2)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem; padding:4px 0;">
+            <span>GST Total</span><span>₹${(billData.gstTotal || 0).toFixed(2)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem; padding:4px 0; color:#ef4444;">
+            <span>Discount Total</span><span>-₹${(billData.discountTotal || 0).toFixed(2)}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-weight:900; font-size:1.5rem; padding:12px 0; border-top:2px solid #0f172a;">
+            <span>Grand Total</span><span>₹${billData.grand.toFixed(2)}</span>
+          </div>
+          <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:16px;" class="no-print">
+            <button id="cancelInvoiceBtn" class="btn-secondary">Cancel</button>
+            <button id="printInvoiceBtn" class="btn-primary"><i class="fas fa-print"></i> Print</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      document.getElementById('cancelInvoiceBtn').onclick = () => modal.remove();
+      document.getElementById('printInvoiceBtn').onclick = () => {
+        window.print();
+        setTimeout(() => modal.remove(), 1000);
+      };
+    }
+
+    // ========== BILL HISTORY ==========
+    function renderHistory() {
+      document.getElementById("mainContentArea").innerHTML = `
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title"><i class="fas fa-history" style="color:var(--primary); font-size:1.5rem;"></i> Bill History</h1>
+            <p class="page-subtitle">Track, reprint, and export customer sales receipts</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-primary" onclick="setActiveNav('billing')"><i class="fas fa-plus"></i> New Bill</button>
+            <button class="btn-secondary" onclick="exportBills()"><i class="fas fa-file-export"></i> Export CSV</button>
+          </div>
+        </div>
+        <div class="page-card-container">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:18px;">
+            <div class="search-bar-custom" style="margin-bottom:0; flex:1; max-width:420px;">
+              <i class="fas fa-search"></i>
+              <input type="text" id="historySearch" placeholder="Search by bill #, customer, phone...">
+            </div>
+            <div id="historyCountBadge" class="count-badge">${bills.length} Invoices</div>
+          </div>
+          <div class="history-table-wrap">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Customer</th>
+                  <th>Phone</th>
+                  <th>Total</th>
+                  <th>Date & Time</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      loadHistoryTable();
+      document.getElementById("historySearch")?.addEventListener("input", loadHistoryTable);
+    }
+
+    function loadHistoryTable() {
+      const search = document.getElementById("historySearch")?.value?.toLowerCase().trim() || '';
+      const filtered = bills.filter(b => 
+        (b.bill_no && b.bill_no.toLowerCase().includes(search)) ||
+        (b.customer_name && b.customer_name.toLowerCase().includes(search)) ||
+        (b.customer_phone && b.customer_phone.toLowerCase().includes(search))
+      );
+      const badge = document.getElementById("historyCountBadge");
+      if (badge) badge.textContent = `${filtered.length} of ${bills.length} Invoices`;
+      const tbody = document.getElementById("historyTableBody");
+      if (!tbody) return;
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state-card">
+                <i class="fas fa-receipt"></i>
+                <h3>No Invoices Found</h3>
+                <p>No bills match your current search criteria.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      tbody.innerHTML = filtered.map(bill => {
+        const whatsappMsg = encodeURIComponent(`Bill #${bill.bill_no}\nCustomer: ${bill.customer_name}\nTotal: ₹${(bill.grand_total || 0).toFixed(2)}`);
+        return `
+          <tr>
+            <td><strong>#${bill.bill_no}</strong></td>
+            <td><div style="font-weight:700; color:#1e1e2d;">${escapeHtml(bill.customer_name)}</div></td>
+            <td>${bill.customer_phone || 'N/A'}</td>
+            <td><strong class="badge-total" style="color:#6d54fe; font-size:1rem;">₹${(bill.grand_total || 0).toFixed(2)}</strong></td>
+            <td style="font-size:0.8rem; color:#64748b;">${bill.date || bill.created_at || 'N/A'}</td>
+            <td>
+              <div class="action-cell" style="justify-content:flex-end;">
+                <button class="btn-view-sm" title="View Bill" onclick="viewBill(${bill.id})"><i class="fas fa-eye"></i></button>
+                <button class="btn-print-sm" title="Print Invoice" onclick="printBillRecord(${bill.id})"><i class="fas fa-print"></i></button>
+                <button class="btn-whatsapp-sm" title="Share on WhatsApp" onclick="window.open('https://wa.me/?text=${whatsappMsg}','_blank')"><i class="fab fa-whatsapp"></i></button>
+                <button class="btn-delete-sm" title="Delete Bill" onclick="deleteBill(${bill.id})"><i class="fas fa-trash-alt"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportBills() {
+      const headers = ['bill_no', 'customer_name', 'customer_phone', 'grand_total', 'subtotal', 'gst_total', 'discount_total', 'date'];
+      exportToCSV(bills, 'bills', headers);
+    }
+
+    async function printBillRecord(id) {
+      const bill = await apiGet(`/bills/${id}`);
+      if (bill && bill.id) {
+        showInvoicePopup({
+          billNo: bill.bill_no,
+          customer: { name: bill.customer_name, phone: bill.customer_phone || 'N/A' },
+          items: bill.items || [],
+          subtotal: bill.subtotal || 0,
+          gstTotal: bill.gst_total || 0,
+          discountTotal: bill.discount_total || 0,
+          grand: bill.grand_total || 0,
+          date: bill.date
+        });
+        setTimeout(() => { const printBtn = document.getElementById('printInvoiceBtn'); if (printBtn) printBtn.click(); }, 500);
+      }
+    }
+
+    async function viewBill(id) {
+      const bill = await apiGet(`/bills/${id}`);
+      if (bill && bill.id) {
+        showInvoicePopup({
+          billNo: bill.bill_no,
+          customer: { name: bill.customer_name, phone: bill.customer_phone || 'N/A' },
+          items: bill.items || [],
+          subtotal: bill.subtotal || 0,
+          gstTotal: bill.gst_total || 0,
+          discountTotal: bill.discount_total || 0,
+          grand: bill.grand_total || 0,
+          date: bill.date
+        });
+      }
+    }
+
+    async function deleteBill(id) {
+      if (!confirm('Move this bill to deleted records?')) return;
+      const result = await apiDelete(`/bills/${id}`);
+      if (result && result.success) {
+        await loadAllData();
+        renderHistory();
+        showToast('Bill moved to deleted', 'fa-trash-alt', '#ef4444');
+      }
+    }
+
+    // ========== DELETED RECORDS ==========
+    function renderDeleted() {
+      document.getElementById("mainContentArea").innerHTML = `
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title"><i class="fas fa-trash-alt" style="color:#ef4444; font-size:1.5rem;"></i> Deleted Records</h1>
+            <p class="page-subtitle">Restore or permanently manage deleted invoices</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-secondary" onclick="setActiveNav('history')"><i class="fas fa-arrow-left"></i> Back to History</button>
+          </div>
+        </div>
+        <div class="page-card-container">
+          <div id="deletedContainer"></div>
+        </div>
+      `;
+      const container = document.getElementById("deletedContainer");
+      if (deletedBills.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state-card">
+            <i class="fas fa-trash-restore"></i>
+            <h3>No Deleted Records</h3>
+            <p>Bills moved to trash will appear here for recovery.</p>
+          </div>
+        `;
+        return;
+      }
+      container.innerHTML = `
+        <div class="history-table-wrap">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Deleted At</th>
+                <th style="text-align:right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${deletedBills.map(b => `
+                <tr>
+                  <td><strong>#${b.bill_no}</strong></td>
+                  <td><div style="font-weight:700; color:#1e1e2d;">${escapeHtml(b.customer_name)}</div></td>
+                  <td><strong style="color:#6d54fe;">₹${(b.grand_total || 0).toFixed(2)}</strong></td>
+                  <td style="font-size:0.8rem; color:#64748b;">${b.deleted_at || 'N/A'}</td>
+                  <td>
+                    <div class="action-cell" style="justify-content:flex-end;">
+                      <button class="btn-success" onclick="restoreBill(${b.id})"><i class="fas fa-undo"></i> Restore</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    async function restoreBill(id) {
+      const result = await apiPost(`/bills/${id}/restore`);
+      if (result && result.success) {
+        await loadAllData();
+        renderDeleted();
+        showToast('Bill restored', 'fa-undo', '#10b981');
+      }
+    }
+
+    // ========== REPAIRS ==========
+    let repairFilter = 'all';
+
+    function renderRepairs() {
+      const pendingCount = repairs.filter(r => (r.status || '').toLowerCase() === 'pending').length;
+      const inProgCount = repairs.filter(r => (r.status || '').toLowerCase() === 'in-progress').length;
+      const completedCount = repairs.filter(r => (r.status || '').toLowerCase() === 'completed').length;
+
+      const container = document.getElementById("mainContentArea");
+      container.innerHTML = `
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title"><i class="fas fa-tools" style="color:var(--primary); font-size:1.5rem;"></i> Repair Services</h1>
+            <p class="page-subtitle">Track device diagnostics, repair statuses, cost estimates, and customer jobs</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-primary" id="newRepairOrderBtn"><i class="fas fa-plus"></i> New Repair Order</button>
+          </div>
+        </div>
+
+        <div class="dash-stats-row-mid" style="margin-bottom:22px;">
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Total Repair Orders</div>
+              <div class="dash-card-value purple-num">${repairs.length}</div>
+              <div class="dash-card-sub">Active device tickets</div>
+            </div>
+            <div class="dash-icon-circle"><i class="fas fa-tools"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Pending Diagnosis</div>
+              <div class="dash-card-value" style="color:#f59e0b;">${pendingCount}</div>
+              <div class="dash-card-sub" style="color:#f59e0b;"><i class="fas fa-clock"></i> Awaiting work</div>
+            </div>
+            <div class="dash-icon-circle" style="background:#fffbeb; color:#f59e0b;"><i class="fas fa-hourglass-half"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">In Progress</div>
+              <div class="dash-card-value" style="color:#6d54fe;">${inProgCount}</div>
+              <div class="dash-card-sub" style="color:#6d54fe;"><i class="fas fa-wrench"></i> On the bench</div>
+            </div>
+            <div class="dash-icon-circle" style="background:#f4f3ff; color:#6d54fe;"><i class="fas fa-cogs"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Completed</div>
+              <div class="dash-card-value" style="color:#10b981;">${completedCount}</div>
+              <div class="dash-card-sub" style="color:#10b981;"><i class="fas fa-check-circle"></i> Ready for pickup</div>
+            </div>
+            <div class="dash-icon-circle" style="background:#ecfdf5; color:#10b981;"><i class="fas fa-check"></i></div>
+          </div>
+        </div>
+
+        <div class="repair-filter-btns">
+          <button class="${repairFilter === 'all' ? 'active-filter' : ''}" data-filter="all"><i class="fas fa-layer-group"></i> All Repairs</button>
+          <button class="${repairFilter === 'pending' ? 'active-filter-pending' : ''}" data-filter="pending"><i class="fas fa-clock"></i> Pending (${pendingCount})</button>
+          <button class="${repairFilter === 'in-progress' ? 'active-filter-prog' : ''}" data-filter="in-progress"><i class="fas fa-wrench"></i> In Progress (${inProgCount})</button>
+          <button class="${repairFilter === 'completed' ? 'active-filter-done' : ''}" data-filter="completed"><i class="fas fa-check-circle"></i> Completed (${completedCount})</button>
+        </div>
+
+        <div class="search-bar-custom" style="margin-bottom:20px;">
+          <i class="fas fa-search"></i>
+          <input type="text" id="repairSearchInput" placeholder="Search by customer, phone, device model, or issue description...">
+        </div>
+        <div id="repairsListContainer" class="repairs-grid"></div>
+      `;
+
+      document.querySelectorAll('.repair-filter-btns button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.repair-filter-btns button').forEach(b => b.classList.remove('active-filter', 'active-filter-pending', 'active-filter-prog', 'active-filter-done'));
+          repairFilter = this.dataset.filter;
+          if (repairFilter === 'all') this.classList.add('active-filter');
+          else if (repairFilter === 'pending') this.classList.add('active-filter-pending');
+          else if (repairFilter === 'in-progress') this.classList.add('active-filter-prog');
+          else if (repairFilter === 'completed') this.classList.add('active-filter-done');
+          loadRepairs();
+        });
+      });
+
+      loadRepairs();
+      document.getElementById("repairSearchInput")?.addEventListener("input", loadRepairs);
+      document.getElementById("newRepairOrderBtn")?.addEventListener("click", () => openRepairFormModal());
+    }
+
+    function loadRepairs() {
+      const filter = document.getElementById("repairSearchInput")?.value?.toLowerCase().trim() || '';
+      let filtered = repairs.filter(r =>
+        (r.customer_name && r.customer_name.toLowerCase().includes(filter)) ||
+        (r.phone && r.phone.toLowerCase().includes(filter)) ||
+        (r.device_model && r.device_model.toLowerCase().includes(filter)) ||
+        (r.issue && r.issue.toLowerCase().includes(filter))
+      );
+
+      if (repairFilter !== 'all') {
+        filtered = filtered.filter(r => (r.status || '').toLowerCase() === repairFilter);
+      }
+
+      const grid = document.getElementById("repairsListContainer");
+      if (!grid) return;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1;">
+            <div class="empty-state-card" style="background:white; border-radius:24px; border:1px solid #edeef6;">
+              <i class="fas fa-tools"></i>
+              <h3>No Repair Orders Found</h3>
+              <p>No device repairs match the current search or status filter.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      grid.innerHTML = filtered.map(r => {
+        const st = (r.status || 'pending').toLowerCase();
+        let badgeHtml = '';
+        if (st === 'pending') badgeHtml = `<span class="repair-status status-pending"><i class="fas fa-clock"></i> Pending</span>`;
+        else if (st === 'in-progress') badgeHtml = `<span class="repair-status status-in-progress"><i class="fas fa-wrench"></i> In Progress</span>`;
+        else if (st === 'completed') badgeHtml = `<span class="repair-status status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
+        else badgeHtml = `<span class="repair-status status-${st}">${r.status}</span>`;
+
+        return `
+          <div class="repair-card">
+            <div class="repair-card-header">
+              <div><strong style="color:#6d54fe;">Ticket #${r.id}</strong> &bull; <span style="font-weight:700; color:#1e1e2d;">${escapeHtml(r.device_model)}</span></div>
+              ${badgeHtml}
+            </div>
+            <div class="repair-card-body">
+              <div class="repair-info-row">
+                <div class="repair-icon"><i class="fas fa-user"></i></div>
+                <div class="repair-detail">
+                  <div style="font-weight:700; color:#1e1e2d;">${escapeHtml(r.customer_name)}</div>
+                  <div style="font-size:0.8rem; color:#78829d;">Phone: ${r.phone || 'N/A'}</div>
+                </div>
+              </div>
+              <div class="repair-info-row">
+                <div class="repair-icon"><i class="fas fa-mobile-alt"></i></div>
+                <div class="repair-detail">
+                  <span style="color:#78829d; font-size:0.8rem;">Device Model:</span>
+                  <div style="font-weight:600; color:#1e1e2d;">${escapeHtml(r.device_model)}</div>
+                </div>
+              </div>
+              <div class="repair-info-row">
+                <div class="repair-icon"><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i></div>
+                <div class="repair-detail">
+                  <span style="color:#78829d; font-size:0.8rem;">Reported Issue:</span>
+                  <div style="font-weight:600; color:#1e1e2d;">${escapeHtml(r.issue || 'N/A')}</div>
+                </div>
+              </div>
+              <div class="repair-info-row">
+                <div class="repair-icon"><i class="fas fa-rupee-sign" style="color:#10b981;"></i></div>
+                <div class="repair-detail">
+                  <span style="color:#78829d; font-size:0.8rem;">Estimated Cost:</span>
+                  <div style="font-weight:800; color:#1e1e2d; font-size:1.05rem;">₹${Number(r.estimated_cost || 0).toLocaleString()}</div>
+                </div>
+              </div>
+              <div class="repair-actions">
+                <button class="btn-view-repair" onclick="viewRepair(${r.id})"><i class="fas fa-eye"></i> View</button>
+                <button class="btn-edit-repair" onclick="editRepair(${r.id})"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn-delete-repair" onclick="deleteRepair(${r.id})"><i class="fas fa-trash-alt"></i> Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function viewRepair(id) {
+      const r = repairs.find(r => r.id === id);
+      if (r) alert(`Repair #${r.id}\nCustomer: ${r.customer_name}\nDevice: ${r.device_model}\nIssue: ${r.issue}\nStatus: ${r.status}\nCost: ₹${r.estimated_cost}`);
+    }
+
+    function editRepair(id) {
+      const r = repairs.find(r => r.id === id);
+      if (r) openRepairFormModal(r);
+    }
+
+    async function deleteRepair(id) {
+      if (!confirm('Delete this repair order?')) return;
+      const result = await apiDelete(`/repairs/${id}`);
+      if (result && result.success) {
+        await loadAllData();
+        renderRepairs();
+        showToast('Repair deleted', 'fa-trash', '#ef4444');
+      }
+    }
+
+    function openRepairFormModal(repairData = null) {
+      const isEdit = !!repairData;
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-card">
+          <h2>${isEdit ? 'Update Repair' : 'New Repair'}</h2>
+          <div class="form-group"><label>Customer Name</label><input id="rCustName" value="${escapeHtml(repairData?.customer_name || '')}"></div>
+          <div class="form-group"><label>Phone</label><input id="rPhone" value="${escapeHtml(repairData?.phone || '')}"></div>
+          <div class="form-group"><label>Device Model</label><input id="rDevice" value="${escapeHtml(repairData?.device_model || '')}"></div>
+          <div class="form-group"><label>Issue</label><textarea id="rIssue">${escapeHtml(repairData?.issue || '')}</textarea></div>
+          <div class="form-group"><label>Estimated Cost (₹)</label><input id="rCost" type="number" value="${repairData?.estimated_cost || 0}"></div>
+          <div class="form-group"><label>Status</label>
+            <select id="rStatus">
+              <option ${repairData?.status === 'pending' ? 'selected' : ''}>pending</option>
+              <option ${repairData?.status === 'in-progress' ? 'selected' : ''}>in-progress</option>
+              <option ${repairData?.status === 'completed' ? 'selected' : ''}>completed</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button id="closeRepairModal" class="btn-secondary">Cancel</button>
+            <button id="saveRepairModal" class="btn-primary">Save</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      modal.querySelector("#closeRepairModal").onclick = () => modal.remove();
+      modal.querySelector("#saveRepairModal").onclick = async () => {
+        const data = {
+          customerName: modal.querySelector("#rCustName").value.trim(),
+          phone: modal.querySelector("#rPhone").value.trim(),
+          deviceModel: modal.querySelector("#rDevice").value.trim(),
+          issue: modal.querySelector("#rIssue").value.trim(),
+          estimatedCost: parseFloat(modal.querySelector("#rCost").value) || 0,
+          status: modal.querySelector("#rStatus").value,
+          receivedDate: new Date().toISOString().split('T')[0]
+        };
+        if (!data.customerName || !data.deviceModel) { alert('Customer name and device model required'); return; }
+        let result;
+        if (isEdit) {
+          result = await apiPut(`/repairs/${repairData.id}`, data);
+        } else {
+          result = await apiPost('/repairs', data);
+        }
+        if (result && result.success) {
+          await loadAllData();
+          modal.remove();
+          renderRepairs();
+          showToast('Repair saved', 'fa-save', '#10b981');
+        }
+      };
+    }
+
+    // ========== STAFF MANAGEMENT ==========
+    function renderStaff() {
+      const present = getPresentCount();
+      const absent = getAbsentCount();
+      const onLeaveCount = staffList.filter(s => s.status !== 'active' || s.on_leave).length;
+
+      document.getElementById("mainContentArea").innerHTML = `
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title"><i class="fas fa-users" style="color:var(--primary); font-size:1.5rem;"></i> Staff Management</h1>
+            <p class="page-subtitle">Employee directory, shifts, roles, and real-time daily attendance</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-primary" id="addStaffBtn"><i class="fas fa-plus"></i> Add Staff</button>
+            <button class="btn-secondary" onclick="exportStaff()"><i class="fas fa-file-export"></i> Export CSV</button>
+          </div>
+        </div>
+
+        <div class="dash-stats-row-mid" style="margin-bottom:22px;">
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Total Staff</div>
+              <div class="dash-card-value purple-num">${staffList.length}</div>
+              <div class="dash-card-sub">Active workforce</div>
+            </div>
+            <div class="dash-icon-circle"><i class="fas fa-users"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Present Today</div>
+              <div class="dash-card-value" style="color:#10b981;">${present}</div>
+              <div class="dash-card-sub" style="color:#10b981;"><i class="fas fa-check-circle"></i> On duty</div>
+            </div>
+            <div class="dash-icon-circle" style="background:#ecfdf5; color:#10b981;"><i class="fas fa-user-check"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">Absent Today</div>
+              <div class="dash-card-value" style="color:#ef4444;">${absent}</div>
+              <div class="dash-card-sub" style="color:#ef4444;"><i class="fas fa-times-circle"></i> Not clocked in</div>
+            </div>
+            <div class="dash-icon-circle" style="background:#fef2f2; color:#ef4444;"><i class="fas fa-user-times"></i></div>
+          </div>
+          <div class="dash-card-white">
+            <div>
+              <div class="dash-card-label">On Leave / Inactive</div>
+              <div class="dash-card-value" style="color:#f59e0b;">${onLeaveCount}</div>
+              <div class="dash-card-sub">Inactive accounts</div>
+            </div>
+            <div class="dash-icon-circle" style="background:#fffbeb; color:#f59e0b;"><i class="fas fa-user-clock"></i></div>
+          </div>
+        </div>
+
+        <div class="staff-filter-btns">
+          <button class="active-filter" data-filter="all"><i class="fas fa-users"></i> All Staff (${staffList.length})</button>
+          <button data-filter="active" class=""><i class="fas fa-check-circle"></i> Active</button>
+          <button data-filter="absent" class=""><i class="fas fa-times-circle"></i> Absent (${absent})</button>
+        </div>
+
+        <div class="page-card-container">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:18px;">
+            <div class="search-bar-custom" style="margin-bottom:0; flex:1; max-width:420px;">
+              <i class="fas fa-search"></i>
+              <input type="text" id="staffSearch" placeholder="Search staff by name, role, phone...">
+            </div>
+            <div id="staffCountBadge" class="count-badge">${staffList.length} Members</div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="staff-table">
+              <thead>
+                <tr>
+                  <th>Employee Name</th>
+                  <th>Designation / Role</th>
+                  <th>Phone Number</th>
+                  <th>Status</th>
+                  <th>Today's Attendance</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="staffTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+      document.querySelectorAll('.staff-filter-btns button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.staff-filter-btns button').forEach(b => b.classList.remove('active-filter', 'active-filter-green', 'active-filter-red'));
+          staffFilter = this.dataset.filter;
+          if (staffFilter === 'all') this.classList.add('active-filter');
+          else if (staffFilter === 'active') this.classList.add('active-filter-green');
+          else if (staffFilter === 'absent') this.classList.add('active-filter-red');
+          loadStaffTable();
+        });
+      });
+      document.getElementById("staffSearch")?.addEventListener("input", loadStaffTable);
+      document.getElementById("addStaffBtn")?.addEventListener("click", () => openStaffFormModal());
+      loadStaffTable();
+    }
+
+    function exportStaff() {
+      const headers = ['id', 'name', 'role', 'phone', 'status', 'working_now', 'on_leave', 'attendance'];
+      exportToCSV(staffList, 'staff', headers);
+    }
+
+    function loadStaffTable() {
+      const search = document.getElementById("staffSearch")?.value?.toLowerCase().trim() || '';
+      let filtered = staffList.filter(s =>
+        (s.name && s.name.toLowerCase().includes(search)) ||
+        (s.phone && s.phone.includes(search)) ||
+        (s.role && s.role.toLowerCase().includes(search))
+      );
+      if (staffFilter === 'active') filtered = filtered.filter(s => s.status === 'active' && !s.on_leave);
+      else if (staffFilter === 'absent') filtered = filtered.filter(s => s.attendance === 'absent');
+
+      const badge = document.getElementById("staffCountBadge");
+      if (badge) badge.textContent = `${filtered.length} of ${staffList.length} Members`;
+
+      const tbody = document.getElementById("staffTableBody");
+      if (!tbody) return;
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-state-card">
+                <i class="fas fa-users-slash"></i>
+                <h3>No Staff Found</h3>
+                <p>No team members match your current search.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      tbody.innerHTML = filtered.map(s => `
+        <tr>
+          <td>
+            <div style="font-weight:700; color:#1e1e2d; font-size:0.95rem;">${escapeHtml(s.name)}</div>
+          </td>
+          <td>
+            <span style="font-weight:600; color:#6d54fe; background:#f4f3ff; padding:3px 10px; border-radius:14px; font-size:0.8rem;">
+              ${escapeHtml(s.role || 'Staff')}
+            </span>
+          </td>
+          <td>${s.phone || 'N/A'}</td>
+          <td><span class="status-badge ${s.status === 'active' ? 'status-active' : 'status-inactive'}">${s.status}</span></td>
+          <td>
+            <button class="attendance-btn btn-present ${s.attendance === 'present' ? 'active' : ''}" onclick="setAttendance(${s.id}, 'present')"><i class="fas fa-check"></i> Present</button>
+            <button class="attendance-btn btn-absent ${s.attendance === 'absent' ? 'active' : ''}" onclick="setAttendance(${s.id}, 'absent')"><i class="fas fa-times"></i> Absent</button>
+          </td>
+          <td>
+            <div class="action-cell" style="justify-content:flex-end;">
+              <button class="btn-edit-sm" title="Edit Staff" onclick="editStaff(${s.id})"><i class="fas fa-pencil-alt"></i></button>
+              <button class="btn-delete-sm" title="Delete Staff" onclick="deleteStaff(${s.id})"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function setAttendance(id, status) {
+      const today = new Date().toISOString().split('T')[0];
+      const result = await apiPost('/attendance', { staffId: id, date: today, status });
+      if (result && result.success) {
+        await loadAllData();
+        renderStaff();
+        showToast(`Attendance updated`, 'fa-user-check', status === 'present' ? '#10b981' : '#ef4444');
+      }
+    }
+
+    function openStaffFormModal(staffData = null) {
+      const isEdit = !!staffData;
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `
+        <div class="modal-card">
+          <h2>${isEdit ? 'Edit Staff' : 'Add New Staff'}</h2>
+          <div class="form-group"><label>Full Name</label><input id="sName" value="${escapeHtml(staffData?.name || '')}"></div>
+          <div class="form-group"><label>Role</label><input id="sRole" value="${escapeHtml(staffData?.role || '')}"></div>
+          <div class="form-group"><label>Phone</label><input id="sPhone" value="${escapeHtml(staffData?.phone || '')}"></div>
+          <div class="form-group"><label>Status</label>
+            <select id="sStatus">
+              <option ${staffData?.status === 'active' ? 'selected' : ''} value="active">Active</option>
+              <option ${staffData?.status === 'inactive' ? 'selected' : ''} value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button id="closeStaffModal" class="btn-secondary">Cancel</button>
+            <button id="saveStaffModal" class="btn-primary">${isEdit ? 'Update' : 'Add'}</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      modal.querySelector("#closeStaffModal").onclick = () => modal.remove();
+      modal.querySelector("#saveStaffModal").onclick = async () => {
+        const data = {
+          name: modal.querySelector("#sName").value.trim(),
+          role: modal.querySelector("#sRole").value.trim(),
+          phone: modal.querySelector("#sPhone").value.trim(),
+          status: modal.querySelector("#sStatus").value
+        };
+        if (!data.name) { alert('Name is required'); return; }
+        let result;
+        if (isEdit) {
+          result = await apiPut(`/staff/${staffData.id}`, data);
+        } else {
+          result = await apiPost('/staff', data);
+        }
+        if (result && result.success) {
+          await loadAllData();
+          modal.remove();
+          renderStaff();
+          showToast(isEdit ? 'Staff updated' : 'Staff added', 'fa-user-check', '#10b981');
+        }
+      };
+    }
+
+    async function editStaff(id) {
+      const staff = staffList.find(s => s.id === id);
+      if (staff) openStaffFormModal(staff);
+    }
+
+    async function deleteStaff(id) {
+      if (!confirm('Delete this staff member?')) return;
+      const result = await apiDelete(`/staff/${id}`);
+      if (result && result.success) {
+        await loadAllData();
+        renderStaff();
+        showToast('Staff deleted', 'fa-trash', '#ef4444');
+      }
+    }
+
+    // ========== REPORTS ==========
+    function renderReports() {
+      document.getElementById("mainContentArea").innerHTML = `
+        <div class="page-title-row no-print">
+          <div>
+            <h1 class="page-title"><i class="fas fa-chart-line" style="color:var(--primary); font-size:1.5rem;"></i> Business Reports & Analytics</h1>
+            <p class="page-subtitle">Track revenue streams, GST collections, discounts, and product volume</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-primary" onclick="printReport()"><i class="fas fa-print"></i> Print Report</button>
+            <button class="btn-secondary" onclick="exportReportData()"><i class="fas fa-file-export"></i> Export CSV</button>
+          </div>
+        </div>
+        <div class="reports-container report-print-area">
+          <div class="filter-row no-print">
+            <div><label style="font-weight:600; margin-right:8px;">Start Date</label><input type="date" id="rStartDate" value="${reportSettings.startDate}"></div>
+            <div><label style="font-weight:600; margin-right:8px;">End Date</label><input type="date" id="rEndDate" value="${reportSettings.endDate}"></div>
+            <div class="quick-range-btns">
+              <button onclick="setReportRange(7)" class="active">Last 7 Days</button>
+              <button onclick="setReportRange(30)">Last 30 Days</button>
+              <button onclick="setReportRange(90)">Last 90 Days</button>
+            </div>
+          </div>
+          <div id="reportContent">
+            <div class="loading"><i class="fas fa-spinner fa-spin"></i><p>Loading analytics data...</p></div>
+          </div>
+        </div>
+      `;
+      document.getElementById("rStartDate")?.addEventListener("change", e => { reportSettings.startDate = e.target.value; generateReport(); });
+      document.getElementById("rEndDate")?.addEventListener("change", e => { reportSettings.endDate = e.target.value; generateReport(); });
+      generateReport();
+    }
+
+    function exportReportData() {
+      const billsData = Array.from(document.querySelectorAll('#reportContent .report-table tbody tr')).map(row => {
+        const cells = row.querySelectorAll('td');
+        return {
+          bill_no: cells[0]?.textContent || '',
+          date: cells[1]?.textContent || '',
+          customer: cells[2]?.textContent || '',
+          items: cells[3]?.textContent || '',
+          gst: cells[4]?.textContent || '',
+          discount: cells[5]?.textContent || '',
+          total: cells[6]?.textContent || ''
+        };
+      });
+      if (billsData.length === 0) {
+        showToast('No data to export', 'fa-exclamation-triangle', '#ef4444');
+        return;
+      }
+      const headers = ['bill_no', 'date', 'customer', 'items', 'gst', 'discount', 'total'];
+      exportToCSV(billsData, 'report', headers);
+    }
+
+    async function generateReport() {
+      const startDate = document.getElementById("rStartDate")?.value;
+      const endDate = document.getElementById("rEndDate")?.value;
+      if (!startDate || !endDate) return;
+
+      const billsData = await apiGet(`/reports/sales?startDate=${startDate}&endDate=${endDate}`);
+      const container = document.getElementById("reportContent");
+      if (!container) return;
+
+      const totalRevenue = billsData.reduce((s, b) => s + (b.grand_total || 0), 0);
+      const totalGst = billsData.reduce((s, b) => s + (b.gst_total || 0), 0);
+      const totalDiscount = billsData.reduce((s, b) => s + (b.discount_total || 0), 0);
+      const totalItems = billsData.reduce((s, b) => s + (b.items || []).reduce((sum, i) => sum + (i.quantity || 0), 0), 0);
+
+      const productSales = {};
+      billsData.forEach(b => {
+        (b.items || []).forEach(i => {
+          if (!productSales[i.product_name]) productSales[i.product_name] = { qty: 0, revenue: 0 };
+          productSales[i.product_name].qty += i.quantity || 0;
+          productSales[i.product_name].revenue += (i.price || 0) * (i.quantity || 0);
+        });
+      });
+      const topProducts = Object.entries(productSales).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 10);
+
+      container.innerHTML = `
+        <div class="report-summary-grid">
+          <div class="report-summary-item"><div class="num" style="color:#6d54fe;">${billsData.length}</div><div class="label">Total Bills</div></div>
+          <div class="report-summary-item"><div class="num" style="color:#3b82f6;">${totalItems}</div><div class="label">Units Sold</div></div>
+          <div class="report-summary-item"><div class="num" style="color:#10b981;">₹${totalRevenue.toFixed(0)}</div><div class="label">Gross Sales</div></div>
+          <div class="report-summary-item"><div class="num" style="color:#8b5cf6;">₹${totalGst.toFixed(0)}</div><div class="label">GST Collected</div></div>
+          <div class="report-summary-item"><div class="num" style="color:#ef4444;">-₹${totalDiscount.toFixed(0)}</div><div class="label">Discounts</div></div>
+        </div>
+        <div class="report-chart-row">
+          <div class="report-chart-box">
+            <div style="font-weight:700; color:#1e1e2d; margin-bottom:12px;"><i class="fas fa-chart-pie" style="color:#6d54fe;"></i> Revenue by Product</div>
+            <canvas id="reportPieChart"></canvas>
+          </div>
+          <div class="report-chart-box">
+            <div style="font-weight:700; color:#1e1e2d; margin-bottom:12px;"><i class="fas fa-trophy" style="color:#f59e0b;"></i> Top Selling Products</div>
+            <div class="top-products-list">
+              ${topProducts.length === 0 ? '<p style="color:#8c8fa7; padding:20px; text-align:center;">No sales recorded for this period</p>' : topProducts.map(([name, data], idx) =>
+                `<div class="top-product-item"><span><span class="rank">#${idx+1}</span> <strong>${escapeHtml(name)}</strong></span><span>₹${data.revenue.toLocaleString()} (${data.qty} units)</span></div>`
+              ).join('')}
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:20px; padding:16px 20px; background:#fafaff; border-radius:20px; border:1px solid #edeef6; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div>
+            <strong style="color:#1e1e2d;"><i class="far fa-calendar-alt" style="color:#6d54fe; margin-right:6px;"></i> Active Filter Period:</strong>
+            <span style="color:#525c76; margin-left:8px;">${startDate} &rarr; ${endDate}</span>
+          </div>
+          <span class="count-badge">${billsData.length} records analyzed</span>
+        </div>
+        <div class="report-table-section">
+          <h3>Detailed Invoices in Period</h3>
+          ${billsData.length === 0 ? `
+            <div class="empty-state-card" style="background:#ffffff; border-radius:20px; border:1px solid #edeef6;">
+              <i class="fas fa-chart-line"></i>
+              <h3>No Invoices in Date Range</h3>
+              <p>Try widening the date range using the filters above.</p>
+            </div>
+          ` : `
+          <div style="overflow-x:auto; background:white; border-radius:18px; border:1px solid #edeef6;">
+            <table class="report-table">
+              <thead><tr><th>Invoice #</th><th>Date</th><th>Customer</th><th>Items Summary</th><th>GST</th><th>Discount</th><th>Total</th></tr></thead>
+              <tbody>
+                ${billsData.map(b => `<tr>
+                  <td><strong>#${b.bill_no}</strong></td>
+                  <td style="font-size:0.82rem; color:#64748b;">${b.date || ''}</td>
+                  <td><strong>${escapeHtml(b.customer_name)}</strong></td>
+                  <td>${(b.items || []).map(i => `${escapeHtml(i.product_name)} <span style="color:#6d54fe;">(x${i.quantity || 0})</span>`).join(', ')}</td>
+                  <td>₹${(b.gst_total || 0).toFixed(2)}</td>
+                  <td style="color:#ef4444;">₹${(b.discount_total || 0).toFixed(2)}</td>
+                  <td><strong style="color:#6d54fe;">₹${(b.grand_total || 0).toFixed(2)}</strong></td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`}
+        </div>
+      `;
+
+      setTimeout(() => {
+        const ctx = document.getElementById('reportPieChart')?.getContext('2d');
+        if (ctx) {
+          if (reportChart) reportChart.destroy();
+          reportChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+              labels: topProducts.map(([name]) => name),
+              datasets: [{ 
+                data: topProducts.map(([, data]) => data.revenue), 
+                backgroundColor: ['#6d54fe','#3b82f6','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#f97316'] 
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false
+            }
+          });
+        }
+      }, 100);
+    }
+
+    function setReportRange(days) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(start.getDate() - days);
+      reportSettings.startDate = start.toISOString().split('T')[0];
+      reportSettings.endDate = end.toISOString().split('T')[0];
+      document.getElementById("rStartDate").value = reportSettings.startDate;
+      document.getElementById("rEndDate").value = reportSettings.endDate;
+      document.querySelectorAll('.quick-range-btns button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.quick-range-btns button').forEach(b => { if (b.textContent.includes(days)) b.classList.add('active'); });
+      generateReport();
+    }
+
+    function printReport() {
+      window.print();
+    }
+
+    // ========== LOW STOCK ALERTS ==========
+    function renderLowStock() {
+      const lowItems = lowStockAlertList();
+      const outOfStock = lowItems.filter(p => p.stock === 0);
+      const lowStock = lowItems.filter(p => p.stock > 0);
+      const adequateStockCount = products.length - lowItems.length;
+      
+      document.getElementById("mainContentArea").innerHTML = `
+        <div class="page-title-row">
+          <div>
+            <h1 class="page-title"><i class="fas fa-exclamation-triangle" style="color:#ef4444; font-size:1.5rem;"></i> Low Stock Alerts</h1>
+            <p class="page-subtitle">Critical inventory alerts requiring immediate purchase orders</p>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn-primary" onclick="setActiveNav('stockManagement')"><i class="fas fa-clipboard-list"></i> Stock Management</button>
+          </div>
+        </div>
+
+        <div class="lowstock-summary-grid">
+          <div class="lowstock-stat-card ls-red">
+            <div class="num">${outOfStock.length}</div>
+            <div class="label">Out of Stock</div>
+          </div>
+          <div class="lowstock-stat-card ls-orange">
+            <div class="num">${lowStock.length}</div>
+            <div class="label">Low Stock (Critical)</div>
+          </div>
+          <div class="lowstock-stat-card ls-blue">
+            <div class="num">${lowItems.length}</div>
+            <div class="label">Total Action Items</div>
+          </div>
+          <div class="lowstock-stat-card ls-purple">
+            <div class="num">${adequateStockCount}</div>
+            <div class="label">Healthy Inventory</div>
+          </div>
+        </div>
+
+        <div class="page-card-container">
+          ${lowItems.length === 0 ? `
+            <div class="empty-state-card">
+              <i class="fas fa-check-circle" style="color:#10b981;"></i>
+              <h3>All Products Have Healthy Stock!</h3>
+              <p>No inventory items are currently below their minimum threshold.</p>
+            </div>
+          ` : `
+            ${outOfStock.length > 0 ? `
+              <h3 style="color:#b91c1c; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-times-circle"></i> Out of Stock (${outOfStock.length} items)
+              </h3>
+              ${outOfStock.map(p => `
+                <div class="lowstock-item-card" style="border-left: 6px solid #ef4444;">
+                  <div style="display:flex; align-items:center; gap:14px;">
+                    <img src="${p.photo_data || 'https://placehold.co/400x400/e2e8f0?text=No+Image'}" style="width:44px; height:44px; border-radius:12px; object-fit:cover;" onerror="this.src='https://placehold.co/400x400/e2e8f0?text=No+Image'">
+                    <div>
+                      <strong style="font-size:0.95rem; color:#1e1e2d;">${escapeHtml(p.name)}</strong>
+                      <div style="font-size:0.78rem; color:#78829d;">SKU: <span class="sku-pill">${p.sku || 'N/A'}</span> &bull; Min required: ${p.min_stock || 5}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="stock-badge out">0 units in stock</span>
+                    <button class="btn-primary" style="padding:6px 16px; font-size:0.8rem;" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i> Restock</button>
+                  </div>
+                </div>
+              `).join('')}
+            ` : ''}
+            ${lowStock.length > 0 ? `
+              <h3 style="color:#b45309; margin-top:${outOfStock.length > 0 ? '24px' : '0'}; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-exclamation-triangle"></i> Low Stock Threshold Reached (${lowStock.length} items)
+              </h3>
+              ${lowStock.map(p => `
+                <div class="lowstock-item-card" style="border-left: 6px solid #f59e0b;">
+                  <div style="display:flex; align-items:center; gap:14px;">
+                    <img src="${p.photo_data || 'https://placehold.co/400x400/e2e8f0?text=No+Image'}" style="width:44px; height:44px; border-radius:12px; object-fit:cover;" onerror="this.src='https://placehold.co/400x400/e2e8f0?text=No+Image'">
+                    <div>
+                      <strong style="font-size:0.95rem; color:#1e1e2d;">${escapeHtml(p.name)}</strong>
+                      <div style="font-size:0.78rem; color:#78829d;">SKU: <span class="sku-pill">${p.sku || 'N/A'}</span> &bull; Min threshold: ${p.min_stock || 5}</div>
+                    </div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="stock-badge low"><i class="fas fa-exclamation-circle"></i> ${p.stock} left</span>
+                    <button class="btn-secondary" style="padding:6px 16px; font-size:0.8rem;" onclick="editProduct(${p.id})"><i class="fas fa-edit"></i> Update Stock</button>
+                  </div>
+                </div>
+              `).join('')}
+            ` : ''}
+          `}
+        </div>
+      `;
+    }
+
+    // ==================== AUTH ====================
+    let registeredUsers = JSON.parse(localStorage.getItem("retailUsers")) || [];
+    if (!registeredUsers.find(u => u.username === "admin")) {
+      registeredUsers.push({ name: "Admin User", username: "admin", password: "admin123", email: "admin@mobilehub.com" });
+      localStorage.setItem("retailUsers", JSON.stringify(registeredUsers));
+    }
+
+    function updateSidebarUser(u, n, e) {
+      document.getElementById('userAvatar').innerText = (n?.[0] || u?.[0] || "A").toUpperCase();
+      document.getElementById('userNameDisplay').innerText = n || u;
+      document.getElementById('userEmailDisplay').innerText = e || `${u}@example.com`;
+    }
+
+    function performLogin(u, p) {
+      let found = registeredUsers.find(ru => ru.username === u && ru.password === p);
+      if (found) {
+        localStorage.setItem('currentUser', JSON.stringify(found));
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('dashboardMain').style.display = 'block';
+        updateSidebarUser(found.username, found.name, found.email);
+        loadAllData().then(() => { renderPage('dashboard'); });
+        showToast(`Welcome ${found.name}!`, 'fa-user-check', '#3b82f6');
+        return true;
+      } else {
+        document.getElementById("loginError").innerText = "Invalid credentials";
+        return false;
+      }
+    }
+
+    function performSignup(n, u, p) {
+      if (!u || p.length < 4 || registeredUsers.find(ru => ru.username === u)) {
+        document.getElementById("signupError").innerText = "Invalid or username exists";
+        return false;
+      }
+      let newU = { name: n || u, username: u, password: p, email: `${u}@example.com` };
+      registeredUsers.push(newU);
+      localStorage.setItem("retailUsers", JSON.stringify(registeredUsers));
+      localStorage.setItem('currentUser', JSON.stringify(newU));
+      document.getElementById('authOverlay').style.display = 'none';
+      document.getElementById('dashboardMain').style.display = 'block';
+      updateSidebarUser(u, newU.name, newU.email);
+      loadAllData().then(() => { renderPage('dashboard'); });
+      showToast(`Welcome ${newU.name}!`, 'fa-user-plus', '#10b981');
+      return true;
+    }
+
+    function logout() {
+      localStorage.removeItem('currentUser');
+      document.getElementById('authOverlay').style.display = 'flex';
+      document.getElementById('dashboardMain').style.display = 'none';
+      showToast('Logged out', 'fa-sign-out-alt', '#64748b');
+    }
+
+    function setActiveTab(tab) {
+      const loginDiv = document.getElementById('loginForm');
+      const signupDiv = document.getElementById('signupForm');
+      const tabLogin = document.querySelector('.auth-tab[data-tab="login"]');
+      const tabSignup = document.querySelector('.auth-tab[data-tab="signup"]');
+      if (tab === 'login') {
+        tabLogin.classList.add('active');
+        tabSignup.classList.remove('active');
+        loginDiv.style.display = 'flex';
+        signupDiv.style.display = 'none';
+      } else {
+        tabSignup.classList.add('active');
+        tabLogin.classList.remove('active');
+        signupDiv.style.display = 'flex';
+        loginDiv.style.display = 'none';
+      }
+    }
+
+    // ==================== NAVIGATION ====================
+    function setActiveNav(page) {
+      document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+      document.querySelector(`.nav-item[data-page="${page}"]`)?.classList.add("active");
+      currentPage = page;
+      renderPage(page);
+    }
+
+    async function renderPage(page) {
+      await loadAllData();
+      if (page === "dashboard") renderDashboard();
+      else if (page === "products") renderProducts();
+      else if (page === "stockManagement") renderStockManagement();
+      else if (page === "billing") renderBilling();
+      else if (page === "history") renderHistory();
+      else if (page === "deleted") renderDeleted();
+      else if (page === "repairs") renderRepairs();
+      else if (page === "staff") renderStaff();
+      else if (page === "reports") renderReports();
+      else if (page === "lowstock") renderLowStock();
+      else document.getElementById("mainContentArea").innerHTML = `<div style="text-align:center; padding:80px;"><i class="fas fa-tools fa-3x"></i><h3>${page} Module</h3><p>Coming Soon</p></div>`;
+    }
+
+    // ==================== EVENT LISTENERS ====================
+    document.querySelector('.auth-tab[data-tab="login"]')?.addEventListener('click', () => setActiveTab('login'));
+    document.querySelector('.auth-tab[data-tab="signup"]')?.addEventListener('click', () => setActiveTab('signup'));
+    document.getElementById('doLoginBtn')?.addEventListener('click', () => {
+      performLogin(
+        document.getElementById('loginUsername').value.trim(),
+        document.getElementById('loginPassword').value
+      );
+    });
+    document.getElementById('doSignupBtn')?.addEventListener('click', () => {
+      performSignup(
+        document.getElementById('signupName').value,
+        document.getElementById('signupUsername').value.trim(),
+        document.getElementById('signupPassword').value
+      );
+    });
+    document.getElementById('sidebarLogoutBtn')?.addEventListener('click', logout);
+    document.getElementById('menuToggleBtn')?.addEventListener('click', () => {
+      document.getElementById('appSidebar')?.classList.toggle('open');
+    });
+    document.querySelector('.notification-btn')?.addEventListener('click', () => {
+      setActiveNav('lowstock');
+    });
+    document.getElementById('globalTopSearch')?.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) return;
+      if (currentPage !== 'products' && currentPage !== 'stockManagement') {
+        setActiveNav('products');
+        setTimeout(() => {
+          const input = document.getElementById('productSearch');
+          if (input) { input.value = q; loadProducts(); }
+        }, 150);
+      } else {
+        const input = document.getElementById(currentPage === 'products' ? 'productSearch' : 'stockSearch');
+        if (input) { input.value = q; if (currentPage === 'products') loadProducts(); else loadStockGrid(); }
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      const navItem = e.target.closest('[data-page]');
+      if (navItem) {
+        const page = navItem.getAttribute('data-page');
+        setActiveNav(page);
+        document.getElementById('appSidebar')?.classList.remove('open');
+      }
+    });
+
+    // ==================== INITIALIZATION ====================
+    window.addEventListener('load', () => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (currentUser) {
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('dashboardMain').style.display = 'block';
+        updateSidebarUser(currentUser.username, currentUser.name, currentUser.email);
+        loadAllData().then(() => { renderPage('dashboard'); });
+      } else {
+        document.getElementById('authOverlay').style.display = 'flex';
+        document.getElementById('dashboardMain').style.display = 'none';
+        setActiveTab('login');
+      }
+    });
+
+    // Make functions globally accessible
+    window.switchPage = setActiveNav;
+    window.setActiveNav = setActiveNav;
+    window.editProduct = editProduct;
+    window.deleteProduct = deleteProduct;
+    window.generateBarcode = generateBarcode;
+    window.viewBill = viewBill;
+    window.printBillRecord = printBillRecord;
+    window.deleteBill = deleteBill;
+    window.restoreBill = restoreBill;
+    window.viewRepair = viewRepair;
+    window.editRepair = editRepair;
+    window.deleteRepair = deleteRepair;
+    window.setAttendance = setAttendance;
+    window.editStaff = editStaff;
+    window.deleteStaff = deleteStaff;
+    window.setReportRange = setReportRange;
+    window.printReport = printReport;
+    window.exportProducts = exportProducts;
+    window.exportBills = exportBills;
+    window.exportStaff = exportStaff;
+    window.exportReportData = exportReportData;
+  </script>
+</body>
+</html>

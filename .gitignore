@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Protected Secrets & Credentials (Blocked by GitHub Secret Scanning)
+.env
+*.env
+*service-account*.json
+!*example*
+firebase-service-account.json
+**/firebase-service-account.json
+**/config.env
+firebase-config/env-configuration.txt
+firebase-config/firebase-service-account.json
+database-and-config/firebase-service-account.json
+database-and-config/config.env
+
+# Distribution & Packaging (>100MB files blocked by GitHub)
+release/
+Release-Package/*.exe
+Release-Package/*.zip
+Release-Package/*.blockmap
+Release-Package/win-unpacked/
+windows-installer/*.exe
+windows-installer/*.zip
+windows-installer/*.blockmap
+windows-installer/win-unpacked/
+*.exe
+*.zip
+*.asar
+
+# Android Build Outputs & Caches
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/*.iml
+android/captures/
+android/.cxx/
+
+# Vite / Temp Outputs
+dist/
+.vite/
+
+# Logs & System Files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+.DS_Store
+Thumbs.db
